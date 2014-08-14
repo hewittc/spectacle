@@ -3,6 +3,14 @@
 #include "device.h"
 #include "device_hackrf.h"
 
+int rx_callback(hackrf_transfer* transfer) {
+
+}
+
+int tx_callback(hackrf_transfer* transfer) {
+
+}
+
 int device_hackrf_init(device_t* dev) {
 	int errcode;
 
@@ -10,7 +18,7 @@ int device_hackrf_init(device_t* dev) {
 	printf("init [%s]\n", hackrf_error_name(errcode));
 
 	hackrf_device* hackrf_dev;
-	dev->handle = hackrf_dev;
+	dev->driver = hackrf_dev;
 
 	return errcode;
 }
@@ -18,7 +26,7 @@ int device_hackrf_init(device_t* dev) {
 int device_hackrf_rx(device_t* dev) {
 	int errcode;
 	
-	hackrf_device* hackrf_dev = dev->handle;
+	hackrf_device* hackrf_dev = dev->driver;
 
 	errcode = hackrf_open(&hackrf_dev);
 	printf("open [%s]\n", hackrf_error_name(errcode));

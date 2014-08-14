@@ -6,23 +6,22 @@ typedef enum {
 	HACKRF = 1
 } device_type;
 
-typedef enum {
-	NONE = 0
-} device_state;
+typedef struct device_t device_t;
+typedef struct device_iface_t device_iface_t;
 
-typedef struct {
-	void* handle;
+struct device_t {
+	void* driver;
+	device_iface_t* iface;
 	device_type type;
-	device_state state;
-	uint64_t frequency;	/* Hz */
-	uint32_t sample_rate;	/* Hz */
-} device_t;
+	uint64_t freq;		/* Hz */
+	uint32_t rate;		/* Hz */
+};
 
-typedef struct {
+struct device_iface_t {
 	int (*init)(device_t*);
 	int (*rx)(device_t*);
 	int (*tx)(device_t*);
-} device_iface_t;
+};
 
 extern device_iface_t devices[];
 
