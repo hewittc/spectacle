@@ -2,11 +2,11 @@
 #include "device.h"
 
 int main(int argc, char **argv) {
-	device_t* dev = malloc(sizeof(device_t*));
+	device_t* dev;
 	device_iface_t* dev_iface = &devices[HACKRF];
 
-	dev_iface->init(dev);
-	dev_iface->rx(dev);
+	dev_iface->config(dev);
+	dev_iface->xfer(dev, 89500000, 8e6);
 
 	return 0;
 }

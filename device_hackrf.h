@@ -3,15 +3,10 @@
 
 #include <hackrf.h>
 
-typedef enum {
-	TRANSCEIVER_MODE_OFF = 0,
-	TRANSCEIVER_MODE_RX = 1,
-	TRANSCEIVER_MODE_TX = 2,
-	TRANSCEIVER_MODE_SS = 3
-} transceiver_mode_t;
+int device_hackrf_config(device_t*);
+int device_hackrf_xfer(device_t*, const uint64_t, const double);
 
-int device_hackrf_init(device_t*);
-int device_hackrf_rx(device_t*);
-int device_hackrf_tx(device_t*);
+int rx_callback(hackrf_transfer*);
+int tx_callback(hackrf_transfer*);
 
 #endif /* DEVICE_HACKRF_H */
