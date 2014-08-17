@@ -5,11 +5,15 @@
 
 int device_hackrf_config(device_t* dev) {
 	int result = HACKRF_SUCCESS;
-	if( dev ) {	
+	if( !dev->driver ) {	
 		hackrf_device* hackrf_dev = malloc(sizeof(hackrf_device*));
-		dev->driver = &hackrf_dev;
-		dev->type = HACKRF;
-		dev->mode = MODE_RX;
+		if( hackrf_dev ) {
+			dev->driver = &hackrf_dev;
+			dev->type = HACKRF;
+			dev->mode = MODE_RX;
+		} else {
+			return EXIT_FAILURE;
+		}
 	} else {
 		return EXIT_FAILURE;
 	}
