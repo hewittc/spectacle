@@ -5,28 +5,23 @@
 
 int device_hackrf_config(device_t* dev) {
 	int result = HACKRF_SUCCESS;
-	if( !dev ) {
-		printf("what?\n");
-		dev = malloc(sizeof(device_t*));
-		if( dev ) {
-			hackrf_device* hackrf_dev = malloc(sizeof(hackrf_device*));
-			dev->driver = &hackrf_dev;
-			dev->type = HACKRF;
-			dev->mode = MODE_RX;
-		} else {
-			return EXIT_FAILURE;
-		}
+	if( dev ) {	
+		hackrf_device* hackrf_dev = malloc(sizeof(hackrf_device*));
+		dev->driver = &hackrf_dev;
+		dev->type = HACKRF;
+		dev->mode = MODE_RX;
 	} else {
-		printf("huh?\n");
+		return EXIT_FAILURE;
 	}
+
 	return result;
 }
 
-int device_hackrf_xfer(device_t* dev, const uint64_t freq, const double rate) {
+int device_hackrf_xfer(device_t* dev, const uint64_t freq, const uint64_t rate) {
 	int result;
 	unsigned int lna_gain=8, vga_gain=20, txvga_gain=0;
 
-	if( !dev ) {
+	if( !dev->driver ) {
 		result = device_hackrf_config(dev);
 		if( result != HACKRF_SUCCESS ) {
 			printf("device_hackrf_config() failed: %s (%d)\n", hackrf_error_name(result), result);

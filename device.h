@@ -14,21 +14,18 @@ typedef enum {
         MODE_SS = 3
 } device_mode;
 
-typedef struct device_t device_t;
-typedef struct device_iface_t device_iface_t;
-
-struct device_t {
+typedef struct {
 	void* driver;
 	device_type type;
 	device_mode mode;
 	uint64_t freq;		/* Hz */
 	uint32_t rate;		/* Hz */
-};
+} device_t;
 
-struct device_iface_t {
+typedef struct {
 	int (*config)(device_t*);
-	int (*xfer)(device_t*, const uint64_t, const double);
-};
+	int (*xfer)(device_t*, const uint64_t, const uint64_t);
+} device_iface_t;
 
 extern device_iface_t devices[];
 

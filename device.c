@@ -3,8 +3,7 @@
 #include "device_hackrf.h"
 
 device_iface_t devices[] = {
-	{ NULL, NULL }, 				/* DUMMY */
-	{ device_hackrf_config, device_hackrf_xfer }, 	/* HACKRF */
-	/*{ device_uhd_config, device_uhd_xfer }*/	/* UHD */
+        { NULL, NULL },                                 /* DUMMY */
+        { device_hackrf_config, device_hackrf_xfer },   /* HACKRF */
+        /*{ device_uhd_config, device_uhd_xfer }*/      /* UHD */
 };
-
