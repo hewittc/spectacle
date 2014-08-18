@@ -3,30 +3,34 @@
 #include "device.h"
 #include "device_hackrf.h"
 
-int device_hackrf_config(device_t* dev) {
+const uint64_t default_freq = 89.5e6;
+const uint64_t default_rate = 8.00e6;
+
+int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate) {
 	int result = HACKRF_SUCCESS;
-	if( !dev->driver ) {	
+	if( !dev->driver ) {
 		hackrf_device* hackrf_dev = malloc(sizeof(hackrf_device*));
 		if( hackrf_dev ) {
-			dev->driver = &hackrf_dev;
+			dev->driver = hackrf_dev;
 			dev->type = HACKRF;
 			dev->mode = MODE_RX;
 		} else {
 			return EXIT_FAILURE;
 		}
-	} else {
-		return EXIT_FAILURE;
 	}
+
+	dev->freq = freq;
+	dev->rate = rate;
 
 	return result;
 }
 
-int device_hackrf_xfer(device_t* dev, const uint64_t freq, const uint64_t rate) {
+int device_hackrf_xfer(device_t* dev) {
 	int result;
 	unsigned int lna_gain=8, vga_gain=20, txvga_gain=0;
 
 	if( !dev->driver ) {
-		result = device_hackrf_config(dev);
+		result = device_hackrf_config(dev, default_freq, default_rate);
 		if( result != HACKRF_SUCCESS ) {
 			printf("device_hackrf_config() failed: %s (%d)\n", hackrf_error_name(result), result);
 			return EXIT_FAILURE;
@@ -41,19 +45,18 @@ int device_hackrf_xfer(device_t* dev, const uint64_t freq, const uint64_t rate) 
 		return EXIT_FAILURE;
 	}
 
-	result = hackrf_open(dev->driver);
+	result = hackrf_open(&hackrf_dev);
 	if( result != HACKRF_SUCCESS ) {
 		printf("hackrf_open() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
 
-	float rate_nice = (float) rate / 1e6;
-	result = hackrf_set_sample_rate(hackrf_dev, rate);
+	result = hackrf_set_sample_rate(hackrf_dev, (const double) dev->rate);
 	if( result != HACKRF_SUCCESS ) {
 		printf("hackrf_set_sample_rate() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	} else {
-		printf("set sampling rate: %0.2f MS/s\n", rate_nice);
+		printf("set sampling rate: %0.2f MS/s\n", (float) dev->rate / 1e6);
 	}
 
 	if( dev->mode == MODE_RX ) {
@@ -75,13 +78,12 @@ int device_hackrf_xfer(device_t* dev, const uint64_t freq, const uint64_t rate) 
 		}
 	}
 
-	float freq_nice = (float) freq / 1e6;
-	result = hackrf_set_freq(hackrf_dev, freq);
+	result = hackrf_set_freq(hackrf_dev, (const uint64_t) dev->freq);
 	if( result != HACKRF_SUCCESS ) {
 		printf("hackrf_set_freq() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	} else {
-		printf("set frequency: %0.2f MHz\n", freq_nice);
+		printf("set frequency: %0.2f MHz\n", (float) dev->freq / 1e6);
 	}
 
 	printf("streaming!\n");

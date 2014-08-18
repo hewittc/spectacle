@@ -1,3 +1,3 @@
 #!/bin/sh
 
-clang -o spectacle -I/usr/local/include/libhackrf -lhackrf *.c
+clang -o spectacle -g -I/usr/local/include/libhackrf -lhackrf *.c

@@ -19,12 +19,12 @@ typedef struct {
 	device_type type;
 	device_mode mode;
 	uint64_t freq;		/* Hz */
-	uint32_t rate;		/* Hz */
+	uint64_t rate;		/* Hz */
 } device_t;
 
 typedef struct {
-	int (*config)(device_t*);
-	int (*xfer)(device_t*, const uint64_t, const uint64_t);
+	int (*config)(device_t*, const uint64_t, const uint64_t);
+	int (*xfer)(device_t*);
 } device_iface_t;
 
 extern device_iface_t devices[];
