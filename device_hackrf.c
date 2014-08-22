@@ -3,8 +3,7 @@
 #include "device.h"
 #include "device_hackrf.h"
 
-const uint64_t default_freq = 89.5e6;
-const uint64_t default_rate = 8.00e6;
+volatile uint32_t byte_count = 0;
 
 int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate) {
 	int result = HACKRF_SUCCESS;
@@ -30,7 +29,7 @@ int device_hackrf_xfer(device_t* dev) {
 	unsigned int lna_gain=8, vga_gain=20, txvga_gain=0;
 
 	if( !dev->driver ) {
-		result = device_hackrf_config(dev, default_freq, default_rate);
+		result = device_hackrf_config(dev, DEFAULT_FREQ, DEFAULT_RATE);
 		if( result != HACKRF_SUCCESS ) {
 			printf("device_hackrf_config() failed: %s (%d)\n", hackrf_error_name(result), result);
 			return EXIT_FAILURE;
@@ -101,7 +100,20 @@ int device_hackrf_xfer(device_t* dev) {
 }
 
 int rx_callback(hackrf_transfer* transfer) {
-	return 0;
+	size_t bytes_to_write;
+	int i;
+
+	ssize_t bytes_written;
+	byte_count += transfer->valid_length;
+	bytes_to_write = transfer->valid_length;
+	bytes_written = bytes_to_write;
+	
+	printf("bytes to write: %d\n", (int) bytes_to_write);
+	if (bytes_written != bytes_to_write) {
+		return EXIT_FAILURE;
+	} else {
+		return HACKRF_SUCCESS;
+	}
 }
 
 int tx_callback(hackrf_transfer* transfer) {

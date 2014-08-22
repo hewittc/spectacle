@@ -4,6 +4,9 @@
 #include "device.h"
 #include <hackrf.h>
 
+#define DEFAULT_FREQ 89.5e6
+#define DEFAULT_RATE 8e6
+
 int device_hackrf_config(device_t*, const uint64_t, const uint64_t);
 int device_hackrf_xfer(device_t*);
 
