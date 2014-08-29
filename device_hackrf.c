@@ -102,14 +102,20 @@ int device_hackrf_xfer(device_t* dev) {
 int rx_callback(hackrf_transfer* transfer) {
 	size_t bytes_to_write;
 	int i;
+	size_t bytes_written;
 
-	ssize_t bytes_written;
 	byte_count += transfer->valid_length;
 	bytes_to_write = transfer->valid_length;
-	bytes_written = bytes_to_write;
-	
-	printf("bytes to write: %d\n", (int) bytes_to_write);
+
+	printf("reading %d bytes...\n", (int) bytes_to_write);
+
+	for (i = 0; i < bytes_to_write; i++) {
+		printf("%02x", transfer->buffer[i]);
+		bytes_written++;
+	}
+
 	if (bytes_written != bytes_to_write) {
+		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);
 		return EXIT_FAILURE;
 	} else {
 		return HACKRF_SUCCESS;
