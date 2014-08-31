@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <complex.h>
+#include <sys/time.h>
 
 #endif /* COMMON_H */
 

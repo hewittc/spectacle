@@ -2,10 +2,12 @@
 #define DEVICE_HACKRF_H
 
 #include "device.h"
-#include <hackrf.h>
+#include <libhackrf/hackrf.h>
 
-#define DEFAULT_FREQ 89.5e6
-#define DEFAULT_RATE 8e6
+#define HACKRF_DEFAULT_FREQ 89.5e6
+#define HACKRF_DEFAULT_RATE 8e6
+
+#define HACKRF_IQ_SIZE (262144 / 2)
 
 int device_hackrf_config(device_t*, const uint64_t, const uint64_t);
 int device_hackrf_xfer(device_t*);
