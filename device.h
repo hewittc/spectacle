@@ -1,7 +1,7 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include <complex.h>
+#include "common.h"
 
 typedef enum {
 	DUMMY = 0,
@@ -22,7 +22,6 @@ typedef struct {
 	device_mode mode;
 	uint64_t freq;		/* Hz */
 	uint64_t rate;		/* Hz */
-	float complex* iq;
 } device_t;
 
 typedef struct {

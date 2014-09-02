@@ -3,23 +3,28 @@
 #include "device.h"
 #include "device_hackrf.h"
 
-volatile uint32_t byte_count = 0;
-
 struct timeval time_start;
 
 unsigned int gain_lna = 8;
 unsigned int gain_vga = 20;
 unsigned int gain_txvga = 0;
 
+float complex* iq_buffer = 0;
+
+volatile uint32_t byte_count = 0;
+
 int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate) {
 	int result = HACKRF_SUCCESS;
 	if( !dev->driver ) {
-		hackrf_device* hackrf_dev = malloc(sizeof(hackrf_device*));
-		if( hackrf_dev ) {
+		hackrf_device* hackrf_dev = 0;
+		hackrf_dev = malloc(sizeof(hackrf_device*));
+
+		iq_buffer = malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
+
+		if( hackrf_dev && iq_buffer ) {
 			dev->driver = hackrf_dev;
 			dev->type = HACKRF;
 			dev->mode = MODE_RX;
-			dev->iq = malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
 		} else {
 			return EXIT_FAILURE;
 		}
@@ -115,6 +120,18 @@ int device_hackrf_xfer(device_t* dev) {
                 time_start = time_now;
 	}
 
+	if( dev->mode == MODE_RX ) {
+		result = hackrf_stop_rx(hackrf_dev);
+		if( result != HACKRF_SUCCESS ) {
+			printf("hackrf_stop_rx() failed: %s (%d)\n", hackrf_error_name(result), result);
+		}
+	} else {
+		result = hackrf_stop_tx(hackrf_dev);
+		if( result != HACKRF_SUCCESS ) {
+			printf("hackrf_stop_tx() failed: %s (%d)\n", hackrf_error_name(result), result);
+		}
+	}
+
 	result = hackrf_close(hackrf_dev);
 	if( result != HACKRF_SUCCESS ) {
 		printf("hackrf_close() failed: %s (%d)\n", hackrf_error_name(result), result);
@@ -132,12 +149,11 @@ int rx_callback(hackrf_transfer* transfer) {
 	byte_count += transfer->valid_length;
 	bytes_to_write = transfer->valid_length;
 
-	//printf("reading %d bytes...\n", (int) bytes_to_write);
+	printf("reading %d bytes...\n", (int) bytes_to_write);
 
-	for (i = 0; i < bytes_to_write - 1; i += 2) {
-		complex float val = transfer->buffer[i] + 
-			I * transfer->buffer[i + 1];
-		printf("%f + i%f\n", creal(val), cimag(val));
+	for (i = 0; (i * 2) + 1 < bytes_to_write; i++) {
+		iq_buffer[i] = transfer->buffer[(i * 2)] + I * transfer->buffer[(i * 2) + 1];
+		printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
 	}
 
 	bytes_written = bytes_to_write;
