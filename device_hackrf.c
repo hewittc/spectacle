@@ -2,6 +2,7 @@
 
 #include "device.h"
 #include "device_hackrf.h"
+#include "fft.h"
 
 struct timeval time_start;
 
@@ -17,9 +18,9 @@ int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate
 	int result = HACKRF_SUCCESS;
 	if( !dev->driver ) {
 		hackrf_device* hackrf_dev = 0;
-		hackrf_dev = malloc(sizeof(hackrf_device*));
+		hackrf_dev = (hackrf_device*) malloc(sizeof(hackrf_device*));
 
-		iq_buffer = malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
+		iq_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
 
 		if( hackrf_dev && iq_buffer ) {
 			dev->driver = hackrf_dev;
@@ -143,20 +144,30 @@ int device_hackrf_xfer(device_t* dev) {
 
 int rx_callback(hackrf_transfer* transfer) {
 	size_t bytes_to_write;
-	int i;
 	size_t bytes_written;
+	int i;
 
 	byte_count += transfer->valid_length;
 	bytes_to_write = transfer->valid_length;
-
-	printf("reading %d bytes...\n", (int) bytes_to_write);
+	bytes_written = 0;
 
 	for (i = 0; (i * 2) + 1 < bytes_to_write; i++) {
-		iq_buffer[i] = transfer->buffer[(i * 2)] + I * transfer->buffer[(i * 2) + 1];
+		iq_buffer[i] = (int8_t) transfer->buffer[(i * 2)] + I * (int8_t) transfer->buffer[(i * 2) + 1];
+		bytes_written += 2;
+
 		printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
 	}
 
-	bytes_written = bytes_to_write;
+// fft test
+/*
+	float complex* out = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
+	fft(iq_buffer, out, HACKRF_IQ_SIZE, 0);
+
+	for (i = 0; i < HACKRF_IQ_SIZE; i++) {
+		printf("%f+j%f\n", crealf(out[i]), cimagf(out[i]));
+	}
+	exit(0);
+*/
 
 	if (bytes_written != bytes_to_write) {
 		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);
