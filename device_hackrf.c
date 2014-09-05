@@ -154,20 +154,19 @@ int rx_callback(hackrf_transfer* transfer) {
 	for (i = 0; (i * 2) + 1 < bytes_to_write; i++) {
 		iq_buffer[i] = (int8_t) transfer->buffer[(i * 2)] + I * (int8_t) transfer->buffer[(i * 2) + 1];
 		bytes_written += 2;
-
-		printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
+		//printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
 	}
 
-// fft test
-/*
 	float complex* out = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
-	fft(iq_buffer, out, HACKRF_IQ_SIZE, 0);
+	apply_window(iq_buffer, out, HACKRF_IQ_SIZE, HAMMING);
+
+	float complex* out2 = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
+	fft(out, out2, HACKRF_IQ_SIZE, 0);
 
 	for (i = 0; i < HACKRF_IQ_SIZE; i++) {
-		printf("%f+j%f\n", crealf(out[i]), cimagf(out[i]));
+		printf("%f+j%f\n", crealf(out2[i]), cimagf(out2[i]));
 	}
 	exit(0);
-*/
 
 	if (bytes_written != bytes_to_write) {
 		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);
