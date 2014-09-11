@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include <complex.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 #define PI 3.14159265358979323846
 
