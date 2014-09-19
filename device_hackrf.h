@@ -7,12 +7,14 @@
 #define HACKRF_DEFAULT_FREQ 89.5e6
 #define HACKRF_DEFAULT_RATE 8e6
 
-#define HACKRF_IQ_SIZE (262144 / 2)
+#define HACKRF_IQ_BUFFER_SIZE (262144 / 2)
 
 int device_hackrf_config(device_t*, const uint64_t, const uint64_t);
 int device_hackrf_xfer(device_t*);
 
 int rx_callback(hackrf_transfer*);
 int tx_callback(hackrf_transfer*);
+
+extern FILE* fp;
 
 #endif /* DEVICE_HACKRF_H */

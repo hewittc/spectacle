@@ -78,7 +78,7 @@ int apply_window(float complex* in, float complex* out, unsigned int size, fft_w
 	}
 
 	for( i = 0; i < size; i++ ) {
-		out[i] = crealf(in[i]) * window_function(crealf(in[i])) + I * 0.0;
+		out[i] = crealf(in[i]) * window_function(crealf(in[i])) + I * cimag(in[i]) * window_function(cimag(in[i]));
 	}
 
 	return 0;

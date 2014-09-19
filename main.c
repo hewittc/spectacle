@@ -2,6 +2,8 @@
 #include "device.h"
 #include "server.h"
 
+FILE* fp;
+
 int main(int argc, char **argv) {
 	device_iface_t* dev_iface = &devices[HACKRF];
 
@@ -11,7 +13,8 @@ int main(int argc, char **argv) {
 	start_server("tcp://*:5555");
 
 	if( dev ) {
-		dev_iface->config(dev, 89.5e6, 20e6);
+		dev_iface->config(dev, 92e6, 20e6);
+        	fp = fopen("data.fifo", "wb+");
 		dev_iface->xfer(dev);
 	}
 

@@ -20,7 +20,7 @@ int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate
 		hackrf_device* hackrf_dev = 0;
 		hackrf_dev = (hackrf_device*) malloc(sizeof(hackrf_device*));
 
-		iq_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
+		iq_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_BUFFER_SIZE);
 
 		if( hackrf_dev && iq_buffer ) {
 			dev->driver = hackrf_dev;
@@ -67,7 +67,7 @@ int device_hackrf_xfer(device_t* dev) {
 		printf("hackrf_set_sample_rate() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	} else {
-		printf("set sampling rate: %0.2f MS/s\n", (float) dev->rate / 1e6);
+		fprintf(stderr, "set sampling rate: %0.2f MS/s\n", (float) dev->rate / 1e6);
 	}
 
 	if( dev->mode == MODE_RX ) {
@@ -94,12 +94,12 @@ int device_hackrf_xfer(device_t* dev) {
 		printf("hackrf_set_freq() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	} else {
-		printf("set frequency: %0.2f MHz\n", (float) dev->freq / 1e6);
+		fprintf(stderr, "set frequency: %0.2f MHz\n", (float) dev->freq / 1e6);
 	}
 
 	gettimeofday(&time_start, NULL);
 
-	printf("streaming!\n");
+	fprintf(stderr, "streaming!\n");
 	while( hackrf_is_streaming(hackrf_dev) == HACKRF_TRUE ) {
 		uint32_t byte_count_now;
 		struct timeval time_now;
@@ -115,7 +115,7 @@ int device_hackrf_xfer(device_t* dev) {
 		time_difference = (time_now.tv_sec - time_start.tv_sec) + 1e-6f * 
 			(time_now.tv_usec - time_start.tv_usec);
 		rate = (float) byte_count_now / time_difference;
-		printf("%4.1f MiB / %5.3f sec = %4.1f MiB/second\n",
+		fprintf(stderr, "%4.1f MiB / %5.3f sec = %4.1f MiB/second\n",
                                 (byte_count_now / 1e6f), time_difference, (rate / 1e6f) );
 
                 time_start = time_now;
@@ -146,27 +146,25 @@ int rx_callback(hackrf_transfer* transfer) {
 	size_t bytes_to_write;
 	size_t bytes_written;
 	int i;
+	int j;
 
 	byte_count += transfer->valid_length;
 	bytes_to_write = transfer->valid_length;
 	bytes_written = 0;
 
-	for (i = 0; (i * 2) + 1 < bytes_to_write; i++) {
-		iq_buffer[i] = (int8_t) transfer->buffer[(i * 2)] + I * (int8_t) transfer->buffer[(i * 2) + 1];
+	for( j = 0; (j * 2) + 1 < bytes_to_write; j++) {
+		iq_buffer[j] = (int8_t) transfer->buffer[(j * 2)] + I * (int8_t) transfer->buffer[(j * 2) + 1];
 		bytes_written += 2;
 		//printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
 	}
 
-	float complex* out = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
-	apply_window(iq_buffer, out, HACKRF_IQ_SIZE, HAMMING);
+	float complex windowed[HACKRF_IQ_BUFFER_SIZE];
+	apply_window(iq_buffer, windowed, HACKRF_IQ_BUFFER_SIZE, BLACKMAN);
 
-	float complex* out2 = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_SIZE);
-	fft(out, out2, HACKRF_IQ_SIZE, 0);
+	float complex transformed[HACKRF_IQ_BUFFER_SIZE];
+	fft(windowed, transformed, HACKRF_IQ_BUFFER_SIZE, 0);
 
-	for (i = 0; i < HACKRF_IQ_SIZE; i++) {
-		printf("%f+j%f\n", crealf(out2[i]), cimagf(out2[i]));
-	}
-	exit(0);
+	fwrite(transformed, sizeof(complex float), HACKRF_IQ_BUFFER_SIZE, fp);
 
 	if (bytes_written != bytes_to_write) {
 		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);
