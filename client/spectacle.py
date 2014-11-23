@@ -10,16 +10,16 @@ from fileio import FileIO
 from periodogram import Periodogram
 from multiprocessing import Pipe, Event
 
-class Spectacle(object):
+class Spectacle:
     def __init__(self, path):
         self.path = path
         self.source, self.sink = Pipe()
-        self.reading = Event()
+        self.events = { 'reading': Event() }
 
-        self.reader = FileIO(self.path, self.source, self.reading)
+        self.reader = FileIO(self.path, self.source, self.events)
         self.reader.start()
 
-        self.periodogram = Periodogram(self.sink, self.reading)
+        self.periodogram = Periodogram(self.sink, self.events)
         self.periodogram.start()
 
         try:

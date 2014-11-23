@@ -13,12 +13,12 @@ sampletype = np.int8          # np.uint8 for hackrf beta
 
 
 class FileIO(Process):
-    def __init__(self, path, pipe, reading):
+    def __init__(self, path, pipe, events):
         super(FileIO, self).__init__()
 
         self.path = path
         self.pipe = pipe
-        self.reading = reading
+        self.events = events
 
         self.fifo = False
         self.chunksize = samplesize * 2
@@ -53,14 +53,12 @@ class FileIO(Process):
             self.fin.seek(0, 0)
 
         while True:
-            delay = time.time()
-            if self.reading.is_set():
-                print('hello')
+            start = time.time()
+            if self.events['reading'].is_set():
                 self.pipe.send_bytes(self._read_chunk())
             else:
-                print('goodbye')
                 self._read_chunk()
-            delay = self.chunktime - (time.time() - delay)
+            delay = self.chunktime - (time.time() - start)
             if delay > 0.0 and delay < 1.0:
                 time.sleep(delay)
 

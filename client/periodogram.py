@@ -18,7 +18,7 @@ from matplotlib import pyplot, animation
 
 targetfreq = 434000000        # target frequency
 #targetfreq = 98000000        # target frequency
-fftsize    = 4096             # number of samples per transform
+fftsize    = 4096*4             # number of samples per transform
 
 samplerate = 20000000          # samples per second
 sampletime = 1.0 / samplerate # elapsed time between samples
@@ -30,11 +30,11 @@ samplefreq = np.array((samplefreq + targetfreq) / 1000000) # offset by target fr
 samplefreq = fftshift(samplefreq)                          # shift zero-frequency component to center
 
 class Periodogram(Process):
-    def __init__(self, pipe, reading):
+    def __init__(self, pipe, events):
         super(Periodogram, self).__init__()
 
         self.pipe = pipe
-        self.reading = reading
+        self.events = events
 
         self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
 
@@ -66,9 +66,9 @@ class Periodogram(Process):
 
     def _read_chunk(self):
         # take a sip from the file stream
-        self.reading.set()
+        self.events['reading'].set()
         chunk = np.frombuffer(self.pipe.recv_bytes(self.chunksize), dtype=sampletype, count=self.chunksize).astype(np.float32).view(np.complex64)
-        self.reading.clear()
+        self.events['reading'].clear()
         return chunk
 
     def _next_result(self):
