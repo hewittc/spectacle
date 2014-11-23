@@ -16,25 +16,19 @@ from matplotlib.backends.backend_gtkagg import FigureCanvasGTKAgg as FigureCanva
 from matplotlib.backends.backend_gtkagg import NavigationToolbar2GTKAgg as NavigationToolbar
 from matplotlib import pyplot, animation
 
-targetfreq = 434000000        # target frequency
-#targetfreq = 98000000        # target frequency
-fftsize    = 4096*4             # number of samples per transform
-
-samplerate = 20000000          # samples per second
-sampletime = 1.0 / samplerate # elapsed time between samples
-samplesize = 131072           # number of samples in buffer
-sampletype = np.int8          # np.uint8 for hackrf beta
-
-samplefreq = fftfreq(fftsize, sampletime)                  # get DFT sample frequencies
-samplefreq = np.array((samplefreq + targetfreq) / 1000000) # offset by target frequency
-samplefreq = fftshift(samplefreq)                          # shift zero-frequency component to center
-
 class Periodogram(Process):
-    def __init__(self, pipe, events):
+    def __init__(self, params, pipe, events):
         super(Periodogram, self).__init__()
 
+        self.params = params
         self.pipe = pipe
         self.events = events
+
+        self.sampletime = 1.0 / self.params['samplerate']                  # elapsed time between samples
+        self.samplefreq = fftfreq(self.params['fftsize'], self.sampletime) # get DFT sample frequencies
+        self.samplefreq = np.array((self.samplefreq + \
+            self.params['targetfreq']) / 1000000)                          # offset by target frequency
+        self.samplefreq = fftshift(self.samplefreq)                        # shift zero-frequency component to center
 
         self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
 
@@ -56,18 +50,19 @@ class Periodogram(Process):
         self.win.add(self.vbox)
 
         # create result buffer
-        self.numresults = int(samplesize / fftsize)
-        self.results = np.zeros(shape=(self.numresults, fftsize), dtype=np.float64)
+        self.numresults = int(self.params['samplesize'] / self.params['fftsize'])
+        self.results = np.zeros(shape=(self.numresults, self.params['fftsize']), dtype=np.float64)
 
         # create file read chunk array
-        self.chunk = np.empty(shape=(samplesize,), dtype=np.complex64)
+        self.chunk = np.empty(shape=(self.params['samplesize'],), dtype=np.complex64)
         self.chunkpos = self.numresults
-        self.chunksize = samplesize * 2
+        self.chunksize = self.params['samplesize'] * 2
 
     def _read_chunk(self):
         # take a sip from the file stream
         self.events['reading'].set()
-        chunk = np.frombuffer(self.pipe.recv_bytes(self.chunksize), dtype=sampletype, count=self.chunksize).astype(np.float32).view(np.complex64)
+        chunk = np.frombuffer(self.pipe.recv_bytes(self.chunksize), 
+            dtype=self.params['sampletype'], count=self.chunksize).astype(np.float32).view(np.complex64)
         self.events['reading'].clear()
         return chunk
 
@@ -78,12 +73,12 @@ class Periodogram(Process):
             self.chunkpos = 0
 
         # create a window
-        start = self.chunkpos * fftsize
-        end = (self.chunkpos + 1) * fftsize
+        start = self.chunkpos * self.params['fftsize']
+        end = (self.chunkpos + 1) * self.params['fftsize']
         self.chunkpos += 1
 
         # apply windowing function to window and normalize
-        iqwindowed = self.chunk[start:end] * sig.kaiser(fftsize, 14)
+        iqwindowed = self.chunk[start:end] * sig.kaiser(self.params['fftsize'], 14)
         iqwindowed /= (255/2)
         iqwindowed -= (1.0 + 1.0j)
         return np.log10(np.absolute(fft(iqwindowed)))
@@ -94,18 +89,19 @@ class Periodogram(Process):
         self.results[0][...] = self._next_result()
         return fftshift(np.sum(self.results, axis=0)) / self.numresults
 
+    def next_event(self):
+        self.pt.set_ydata(self.next())
+        self.can.draw()
+        return True
+ 
     def run(self):
-        self.pt, = self.ax.plot(samplefreq, self.next())
+        self.pt, = self.ax.plot(self.samplefreq, self.next())
+        self.ax.set_xlim(self.samplefreq[0], self.samplefreq[len(self.samplefreq) - 1])
         self.ax.set_ylim(-4.,8.)
 
-        def next_event():
-            self.pt.set_ydata(self.next())
-            self.can.draw()
-            return True
-    
-        gobject.timeout_add(60, next_event)
-    
+        gobject.timeout_add(60, self.next_event)
         self.win.show_all()
+
         gtk.main()
 
 # vim: autoindent tabstop=4 shiftwidth=4 expandtab softtabstop=4 filetype=python

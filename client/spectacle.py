@@ -10,16 +10,29 @@ from fileio import FileIO
 from periodogram import Periodogram
 from multiprocessing import Pipe, Event
 
+targetfreq = 434000000                              # target frequency
+samplerate = 20000000                                # samples per second
+samplesize = 131072                                 # number of samples in buffer
+sampletype = 'int8'                                 # uint8 for hackrf beta
+fftsize    = 4096*4                                   # number of samples per transform
+
 class Spectacle:
     def __init__(self, path):
         self.path = path
+        self.params = { 
+            'targetfreq': targetfreq,
+            'samplerate': samplerate,
+            'samplesize': samplesize,
+            'sampletype': sampletype,
+            'fftsize'   : fftsize,
+        }
         self.source, self.sink = Pipe()
         self.events = { 'reading': Event() }
 
-        self.reader = FileIO(self.path, self.source, self.events)
+        self.reader = FileIO(self.path, self.params, self.source, self.events)
         self.reader.start()
 
-        self.periodogram = Periodogram(self.sink, self.events)
+        self.periodogram = Periodogram(self.params, self.sink, self.events)
         self.periodogram.start()
 
         try:
