@@ -11,10 +11,10 @@ from periodogram import Periodogram
 from multiprocessing import Pipe, Event
 
 targetfreq = 434000000                              # target frequency
-samplerate = 20000000                                # samples per second
+samplerate = 8000000                                # samples per second
 samplesize = 131072                                 # number of samples in buffer
 sampletype = 'int8'                                 # uint8 for hackrf beta
-fftsize    = 4096*4                                   # number of samples per transform
+fftsize    = 4096                                   # number of samples per transform
 
 class Spectacle:
     def __init__(self, path):
