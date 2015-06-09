@@ -14,15 +14,15 @@ float window_rectangle(const float pos) {
 }
 
 float window_hamming(const float pos) {
-	return 0.54 + 0.46 * cos(PI * pos);
+	return 0.54 + 0.46 * cos(M_PI * pos);
 }
 
 float window_blackman(const float pos) {
-	return 0.42 + 0.50 * cos(PI * pos) + 0.08 * cos(2.0 * PI * pos);
+	return 0.42 + 0.50 * cos(M_PI * pos) + 0.08 * cos(2.0 * M_PI * pos);
 }
 
 float window_hann(const float pos) {
-	float x = cos(pos * PI / 2.0);
+	float x = cos(pos * M_PI / 2.0);
 	return x * x;
 }
 

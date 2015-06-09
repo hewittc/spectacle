@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -10,8 +11,6 @@
 #include <complex.h>
 #include <sys/time.h>
 #include <pthread.h>
-
-#define PI 3.14159265358979323846
 
 #endif /* COMMON_H */
 
