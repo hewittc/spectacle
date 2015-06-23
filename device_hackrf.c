@@ -1,5 +1,4 @@
 #include "common.h"
-
 #include "device.h"
 #include "device_hackrf.h"
 #include "fft.h"
@@ -10,7 +9,7 @@ unsigned int gain_lna = 8;
 unsigned int gain_vga = 20;
 unsigned int gain_txvga = 0;
 
-float complex* iq_buffer = 0;
+float complex* hackrf_buffer = NULL;
 
 volatile uint32_t byte_count = 0;
 
@@ -21,9 +20,9 @@ int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate
 		hackrf_device* hackrf_dev = 0;
 		hackrf_dev = (hackrf_device*) malloc(sizeof(hackrf_device*));
 
-		iq_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_IQ_BUFFER_SIZE);
+		hackrf_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_BUFFER_SIZE);
 
-		if (hackrf_dev && iq_buffer) {
+		if (hackrf_dev && hackrf_buffer) {
 			dev->driver = hackrf_dev;
 			dev->type = HACKRF;
 			dev->mode = MODE_RX;
@@ -64,7 +63,7 @@ int device_hackrf_xfer(device_t* dev)
 		return EXIT_FAILURE;
 	}
 
-	result = hackrf_set_sample_rate(hackrf_dev, (const double) dev->rate);
+	result = hackrf_set_sample_rate(hackrf_dev, (const uint32_t) dev->rate);
 	if (result != HACKRF_SUCCESS) {
 		printf("hackrf_set_sample_rate() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
@@ -156,18 +155,18 @@ int rx_callback(hackrf_transfer* transfer)
 	bytes_written = 0;
 
 	for (j = 0; (j * 2) + 1 < bytes_to_write; j++) {
-		iq_buffer[j] = (int8_t) transfer->buffer[(j * 2)] + I * (int8_t) transfer->buffer[(j * 2) + 1];
+		hackrf_buffer[j] = (int8_t) transfer->buffer[(j * 2)] + I * (int8_t) transfer->buffer[(j * 2) + 1];
 		bytes_written += 2;
 		//printf("%f + i%f\n", creal(iq_buffer[i]), cimag(iq_buffer[i]));
 	}
 
-	float complex windowed[HACKRF_IQ_BUFFER_SIZE];
-	apply_window(iq_buffer, windowed, HACKRF_IQ_BUFFER_SIZE, BLACKMAN);
+	float complex windowed[HACKRF_BUFFER_SIZE];
+	apply_window(hackrf_buffer, windowed, HACKRF_BUFFER_SIZE, BLACKMAN);
 
-	float complex transformed[HACKRF_IQ_BUFFER_SIZE];
-	fft(windowed, transformed, HACKRF_IQ_BUFFER_SIZE, 0);
+	float complex transformed[HACKRF_BUFFER_SIZE];
+	fft(windowed, transformed, HACKRF_BUFFER_SIZE, 0);
 
-	fwrite(transformed, sizeof(complex float), HACKRF_IQ_BUFFER_SIZE, fp);
+	fwrite(transformed, sizeof(complex float), HACKRF_BUFFER_SIZE, fp);
 
 	if (bytes_written != bytes_to_write) {
 		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);

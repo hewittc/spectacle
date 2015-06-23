@@ -5,15 +5,14 @@
 
 typedef enum {
 	DUMMY = 0,
-	HACKRF = 1,
-	UHD = 2
+	IQFILE = 1,
+	HACKRF = 2,
 } device_type;
 
 typedef enum {
         MODE_OFF = 0,
         MODE_RX = 1,
-        MODE_TX = 2,
-        MODE_SS = 3
+        MODE_TX = 2
 } device_mode;
 
 typedef struct {
@@ -22,6 +21,7 @@ typedef struct {
 	device_mode mode;
 	uint64_t freq;		/* Hz */
 	uint64_t rate;		/* Hz */
+	float complex* buffer;
 } device_t;
 
 typedef struct {
