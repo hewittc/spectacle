@@ -16,8 +16,6 @@ $(OBJDIR)/%.o: %.c $(DEPS)
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
-.PHONY: clean
-
 clean:
 	rm -f $(OBJ) $(EXE) core
 
