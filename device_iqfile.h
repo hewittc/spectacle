@@ -8,9 +8,9 @@
 
 #define IQFILE_BUFFER_SIZE (262144 / 2)
 
-int device_iqfile_config(device_t*, const uint64_t, const uint64_t);
-int device_iqfile_xfer(device_t*);
+int device_iqfile_config(device_t *, const uint64_t, const uint64_t);
+int device_iqfile_xfer(device_t *);
 
-int device_iqfile_path(device_t*, const char*);
+int device_iqfile_path(device_t *, const char *);
 
 #endif /* DEVICE_IQFILE_H */

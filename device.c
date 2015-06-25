@@ -8,3 +8,4 @@ device_iface_t devices[] = {
 	{ device_iqfile_config, device_iqfile_xfer },	/* IQFILE */
 	{ device_hackrf_config, device_hackrf_xfer },	/* HACKRF */
 };
+

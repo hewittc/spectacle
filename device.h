@@ -16,18 +16,23 @@ typedef enum {
 } device_mode;
 
 typedef struct {
-	void* driver;
+	void *driver;
 	device_type type;
 	device_mode mode;
 	uint64_t freq;		/* Hz */
 	uint64_t rate;		/* Hz */
-	float complex* buffer;
+	float complex *buffer;
 } device_t;
 
 typedef struct {
-	int (*config)(device_t*, const uint64_t, const uint64_t);
-	int (*xfer)(device_t*);
+	int (*config)(device_t *, const uint64_t, const uint64_t);
+	int (*xfer)(device_t *);
 } device_iface_t;
+
+typedef struct {
+	char *path;
+	FILE *fp;
+} device_path_t;
 
 extern device_iface_t devices[];
 

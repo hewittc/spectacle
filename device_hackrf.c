@@ -9,18 +9,18 @@ unsigned int gain_lna = 8;
 unsigned int gain_vga = 20;
 unsigned int gain_txvga = 0;
 
-float complex* hackrf_buffer = NULL;
+float complex *hackrf_buffer = NULL;
 
 volatile uint32_t byte_count = 0;
 
-int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate)
+int device_hackrf_config(device_t *dev, const uint64_t freq, const uint64_t rate)
 {
 	int result = EXIT_SUCCESS;
 	if (!dev->driver) {
-		hackrf_device* hackrf_dev = 0;
-		hackrf_dev = (hackrf_device*) malloc(sizeof(hackrf_device*));
+		hackrf_device *hackrf_dev = 0;
+		hackrf_dev = (hackrf_device *) malloc(sizeof(hackrf_device *));
 
-		hackrf_buffer = (float complex*) malloc(sizeof(float complex) * HACKRF_BUFFER_SIZE);
+		hackrf_buffer = (float complex *) malloc(sizeof(float complex) * HACKRF_BUFFER_SIZE);
 
 		if (hackrf_dev && hackrf_buffer) {
 			dev->driver = hackrf_dev;
@@ -37,7 +37,7 @@ int device_hackrf_config(device_t* dev, const uint64_t freq, const uint64_t rate
 	return result;
 }
 
-int device_hackrf_xfer(device_t* dev)
+int device_hackrf_xfer(device_t *dev)
 {
 	int result;
 
@@ -49,7 +49,7 @@ int device_hackrf_xfer(device_t* dev)
 		}
 	}
 
-	hackrf_device* hackrf_dev = (hackrf_device*) dev->driver;
+	hackrf_device *hackrf_dev = (hackrf_device *) dev->driver;
 
 	result = hackrf_init();
 	if (result != HACKRF_SUCCESS) {
@@ -143,7 +143,7 @@ int device_hackrf_xfer(device_t* dev)
 	return result;
 }
 
-int rx_callback(hackrf_transfer* transfer)
+int rx_callback(hackrf_transfer *transfer)
 {
 	size_t bytes_to_write;
 	size_t bytes_written;
@@ -166,7 +166,10 @@ int rx_callback(hackrf_transfer* transfer)
 	float complex transformed[HACKRF_BUFFER_SIZE];
 	fft(windowed, transformed, HACKRF_BUFFER_SIZE, 0);
 
+	FILE *fp;
+	fp = fopen("data.fifo", "wb+");
 	fwrite(transformed, sizeof(complex float), HACKRF_BUFFER_SIZE, fp);
+	fclose(fp);
 
 	if (bytes_written != bytes_to_write) {
 		printf("rx_callback() failed: read %d bytes, but expected %d bytes\n", (int) bytes_written, (int) bytes_to_write);
@@ -177,7 +180,7 @@ int rx_callback(hackrf_transfer* transfer)
 
 }
 
-int tx_callback(hackrf_transfer* transfer)
+int tx_callback(hackrf_transfer *transfer)
 {
 	return 0;
 }

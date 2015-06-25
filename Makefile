@@ -1,5 +1,5 @@
 CC     = clang
-CFLAGS = -I/usr/local/include -std=c11 -g
+CFLAGS = -std=c11 -g
 LIBS   = -lhackrf -lliquid -lm -lpthread -lzmq
 DEPS   = common.h device.h device_hackrf.h device_iqfile.h fft.h server.h
 SRC    = device.c device_hackrf.c device_iqfile.c fft.c main.c server.c

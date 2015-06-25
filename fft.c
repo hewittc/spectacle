@@ -1,7 +1,7 @@
 #include "common.h"
 #include "fft.h"
 
-int fft(float complex* in, float complex* out, unsigned int size, int flags)
+int fft(float complex *in, float complex *out, unsigned int size, int flags)
 {
 	fftplan fft_plan = fft_create_plan(size, in, out, LIQUID_FFT_FORWARD, flags);
 	fft_execute(fft_plan);
@@ -56,7 +56,7 @@ float window_bartlett(const float pos)
 	}
 }
 
-int apply_window(float complex* in, float complex* out, unsigned int size, fft_window window)
+int apply_window(float complex *in, float complex *out, unsigned int size, fft_window window)
 {
 	float (*window_function)(const float);
 	int i;

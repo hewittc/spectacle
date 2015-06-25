@@ -1,7 +1,7 @@
 #include "common.h"
 #include "server.h"
 
-static void* worker_ctrl_routine(void* context)
+static void *worker_ctrl_routine(void *context)
 {
 	void* receiver = zmq_socket(context, ZMQ_REP);
 	zmq_connect(receiver, WORKER_TRANSPORT);
@@ -9,21 +9,21 @@ static void* worker_ctrl_routine(void* context)
 	return 0;
 }
 
-static void* worker_data_routine(void* context)
+static void *worker_data_routine(void *context)
 {
-	void* receiver = zmq_socket(context, ZMQ_REP);
+	void *receiver = zmq_socket(context, ZMQ_REP);
 	zmq_connect(receiver, WORKER_TRANSPORT);
 
 	return 0;
 }
 
-int start_server(const char* uri_clients)
+int start_server(const char *uri_clients)
 {
-	void* context = zmq_ctx_new();
-	void* clients = zmq_socket(context, ZMQ_ROUTER);
+	void *context = zmq_ctx_new();
+	void *clients = zmq_socket(context, ZMQ_ROUTER);
 	zmq_bind(clients, uri_clients);
 
-	void* workers = zmq_socket(context, ZMQ_DEALER);
+	void *workers = zmq_socket(context, ZMQ_DEALER);
 	zmq_bind(workers, WORKER_TRANSPORT);
 
 /*
