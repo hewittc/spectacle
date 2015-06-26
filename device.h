@@ -32,9 +32,12 @@ typedef struct {
 typedef struct {
 	char *path;
 	FILE *fp;
-} device_path_t;
+} device_file_t;
 
 extern device_iface_t devices[];
+
+extern int device_iqfile_open(device_t *, const char *);
+extern int device_iqfile_close(device_t *);
 
 #endif /* DEVICE_H */
 

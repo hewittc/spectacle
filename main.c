@@ -9,11 +9,13 @@ int main(int argc, char **argv)
 	device_t *dev = NULL;
 	dev = (device_t *) malloc(sizeof(device_t *));
 
-	start_server("tcp://*:5555");
+	//start_server("tcp://*:5555");
 
 	if (dev) {
 		dev_iface->config(dev, 92e6, 20e6);
+		device_iqfile_open(dev, "/home/chris/pager.iq");
 		dev_iface->xfer(dev);
+		device_iqfile_close(dev);
 	}
 
 	return 0;

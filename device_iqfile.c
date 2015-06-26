@@ -3,12 +3,21 @@
 
 int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate)
 {
+	if (!dev) {
+		return EXIT_FAILURE;
+	}
+
 	if (!dev->driver) {
+		device_file_t *driver = NULL;
+		driver = malloc(sizeof(device_file_t));
+
 		float complex *buffer = NULL;
 		buffer = malloc(sizeof(float complex) * IQFILE_BUFFER_SIZE);
 
-		if (buffer) {
-			dev->driver = NULL;
+		if (driver && buffer) {
+			driver->path = NULL;
+			driver->fp = NULL;
+			dev->driver = driver;
 			dev->type = IQFILE;
 			dev->mode = MODE_OFF;
 			dev->buffer = buffer;
@@ -25,16 +34,16 @@ int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate
 
 int device_iqfile_xfer(device_t *dev)
 {
-	if (!dev->driver) {
+	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
-	} else {
-		if (dev->mode == MODE_OFF) {
-			return EXIT_SUCCESS;
-		} else if (dev->mode == MODE_RX) {
-			return EXIT_SUCCESS;
-		} else if (dev->mode == MODE_TX) {
-			return EXIT_FAILURE;
-		}
+	} 
+
+	if (dev->mode == MODE_OFF) {
+		return EXIT_SUCCESS;
+	} else if (dev->mode == MODE_RX) {
+		return EXIT_SUCCESS;
+	} else if (dev->mode == MODE_TX) {
+		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;
@@ -42,10 +51,44 @@ int device_iqfile_xfer(device_t *dev)
 
 int device_iqfile_open(device_t *dev, const char *path)
 {
-	return EXIT_FAILURE;
+	if (!dev || !dev->driver || dev->type != IQFILE) {
+		return EXIT_FAILURE;
+	}
+
+	if (device_iqfile_close(dev)) {
+		return EXIT_FAILURE;
+	}
+
+	FILE *fp = fopen(path, "rb");
+	if (!fp) {
+		return EXIT_FAILURE;
+	}
+
+	device_file_t *driver = dev->driver;
+	driver->path = strdup(path);
+	driver->fp = fp;
+
+	return EXIT_SUCCESS;
 }
 
 int device_iqfile_close(device_t *dev)
 {
-	return EXIT_FAILURE;
+	if (!dev || !dev->driver || dev->type != IQFILE) {
+		return EXIT_FAILURE;
+	}
+
+	device_file_t *driver = dev->driver;
+	if (driver->path) {
+		free(driver->path);
+		driver->path = NULL;
+	}
+	if (driver->fp) {
+		if (fclose(driver->fp)) {
+			return EXIT_FAILURE;
+		}
+		driver->fp = NULL;
+	}
+
+	return EXIT_SUCCESS;
 }
+
