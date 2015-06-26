@@ -56,18 +56,23 @@ int device_iqfile_rx(device_t *dev)
 		return EXIT_FAILURE;
 	}
 
-	int i = 0;
-	unsigned char byte;
+	uint64_t position = 0;
+	uint8_t byte;
 	device_file_t *driver = dev->driver;
 	while (true) {
 		fread(&byte, 1, 1, driver->fp);
-		if (!(i++ % 16)) printf("%08x: ", i);
-		printf("%02x", byte);
-		if (!(i % 2)) printf(" ");
-		if (!(i % 16)) printf("\n");
-		if (feof(driver->fp) || ferror(driver->fp)) {
-			break;
+		if (ferror(driver->fp)) {
+			return EXIT_FAILURE;
 		}
+		if (feof(driver->fp)) {
+			if (driver->loop) {
+				rewind(driver->fp);
+				position = 0;
+			} else {
+				return EXIT_SUCCESS;
+			}
+		}
+		printf_iq(byte, position++);
 	}
 
 	return EXIT_SUCCESS;

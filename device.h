@@ -37,6 +37,8 @@ typedef struct {
 
 extern device_iface_t devices[];
 
+int printf_iq(uint8_t, uint64_t);
+
 extern int device_iqfile_open(device_t *, const char *, bool);
 extern int device_iqfile_close(device_t *);
 

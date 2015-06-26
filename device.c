@@ -9,3 +9,19 @@ device_iface_t devices[] = {
 	{ device_hackrf_config, device_hackrf_xfer },	/* HACKRF */
 };
 
+int printf_iq(uint8_t byte, uint64_t position)
+{
+	if (!(position % 16)) { 
+		printf("%08lx: ", position);
+	}
+	printf("%02x", byte);
+	if (!(++position % 2)) {
+		printf(" ");
+	}
+	if (!(position % 16)) {
+		printf("\n");
+	}
+
+	return EXIT_SUCCESS;
+}
+
