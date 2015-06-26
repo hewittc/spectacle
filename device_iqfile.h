@@ -12,5 +12,6 @@ int device_iqfile_config(device_t *, const uint64_t, const uint64_t);
 int device_iqfile_xfer(device_t *);
 
 int device_iqfile_path(device_t *, const char *);
+int device_iqfile_rx(device_t *);
 
 #endif /* DEVICE_IQFILE_H */

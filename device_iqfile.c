@@ -20,7 +20,7 @@ int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate
 			driver->loop = false;
 			dev->driver = driver;
 			dev->type = IQFILE;
-			dev->mode = MODE_OFF;
+			dev->mode = MODE_RX;
 			dev->buffer = buffer;
 		} else {
 			return EXIT_FAILURE;
@@ -42,9 +42,28 @@ int device_iqfile_xfer(device_t *dev)
 	if (dev->mode == MODE_OFF) {
 		return EXIT_SUCCESS;
 	} else if (dev->mode == MODE_RX) {
-		return EXIT_SUCCESS;
+		return device_iqfile_rx(dev);
 	} else if (dev->mode == MODE_TX) {
 		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+int device_iqfile_rx(device_t *dev)
+{
+	if (!dev || !dev->driver || dev->type != IQFILE) {
+		return EXIT_FAILURE;
+	}
+
+	unsigned int byte;
+	device_file_t *driver = dev->driver;
+	while (true) {
+		fread(&byte, 1, 1, driver->fp);
+		printf("%x", byte);
+		if (feof(driver->fp) || ferror(driver->fp)) {
+			break;
+		}
 	}
 
 	return EXIT_SUCCESS;
