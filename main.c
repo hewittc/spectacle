@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
 	if (dev) {
 		dev_iface->config(dev, 92e6, 20e6);
-		device_iqfile_open(dev, "/home/chris/pager.iq");
+		device_iqfile_open(dev, "/home/chris/pager.iq", true);
 		dev_iface->xfer(dev);
 		device_iqfile_close(dev);
 	}

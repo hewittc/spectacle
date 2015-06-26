@@ -17,6 +17,7 @@ int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate
 		if (driver && buffer) {
 			driver->path = NULL;
 			driver->fp = NULL;
+			driver->loop = false;
 			dev->driver = driver;
 			dev->type = IQFILE;
 			dev->mode = MODE_OFF;
@@ -49,7 +50,7 @@ int device_iqfile_xfer(device_t *dev)
 	return EXIT_SUCCESS;
 }
 
-int device_iqfile_open(device_t *dev, const char *path)
+int device_iqfile_open(device_t *dev, const char *path, const bool loop)
 {
 	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
@@ -67,6 +68,7 @@ int device_iqfile_open(device_t *dev, const char *path)
 	device_file_t *driver = dev->driver;
 	driver->path = strdup(path);
 	driver->fp = fp;
+	driver->loop = loop;
 
 	return EXIT_SUCCESS;
 }
