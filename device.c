@@ -12,7 +12,7 @@ device_iface_t devices[] = {
 int printf_iq(uint8_t byte, uint64_t position)
 {
 	if (!(position % 16)) { 
-		printf("%08lx: ", position);
+		printf("%" PRIu64 ": ", position);
 	}
 	printf("%02x", byte);
 	if (!(++position % 2)) {
