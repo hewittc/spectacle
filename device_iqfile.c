@@ -9,10 +9,10 @@ int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate
 
 	if (!dev->driver) {
 		device_file_t *driver = NULL;
-		driver = malloc(sizeof(device_file_t));
+		driver = malloc(sizeof(*driver));
 
 		float complex *buffer = NULL;
-		buffer = malloc(sizeof(float complex) * IQFILE_BUFFER_SIZE);
+		buffer = malloc(sizeof(*buffer) * IQFILE_BUFFER_SIZE);
 
 		if (driver && buffer) {
 			driver->path = NULL;
