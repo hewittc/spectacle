@@ -1,48 +1,33 @@
 #include "common.h"
 #include "device_iqfile.h"
 
-int device_iqfile_config(device_t *dev, const uint64_t freq, const uint64_t rate)
+int dev_iqfile_setup(device *dev, const uint64_t freq, const uint64_t rate)
 {
 	if (!dev) {
 		return EXIT_FAILURE;
 	}
 
-	if (!dev->driver) {
-		device_file_t *driver = NULL;
-		driver = malloc(sizeof(*driver));
+	dev->driver = calloc(1, sizeof(dev_iqfile));
+	dev->buffer = calloc(IQFILE_BUFFER_SIZE, sizeof(float complex));
 
-		float complex *buffer = NULL;
-		buffer = malloc(sizeof(*buffer) * IQFILE_BUFFER_SIZE);
-
-		if (driver && buffer) {
-			driver->path = NULL;
-			driver->fp = NULL;
-			driver->loop = false;
-			dev->driver = driver;
-			dev->type = IQFILE;
-			dev->mode = MODE_RX;
-			dev->buffer = buffer;
-		} else {
-			return EXIT_FAILURE;
-		}
-	}
-
+	dev->type = IQFILE;
+	dev->mode = MODE_RX;
 	dev->freq = freq;
 	dev->rate = rate;
 
 	return EXIT_SUCCESS;
 }
 
-int device_iqfile_xfer(device_t *dev)
+int dev_iqfile_xfer(device *dev)
 {
 	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
-	} 
+	}
 
 	if (dev->mode == MODE_OFF) {
 		return EXIT_SUCCESS;
 	} else if (dev->mode == MODE_RX) {
-		return device_iqfile_rx(dev);
+		return dev_iqfile_rx(dev);
 	} else if (dev->mode == MODE_TX) {
 		return EXIT_FAILURE;
 	}
@@ -50,7 +35,7 @@ int device_iqfile_xfer(device_t *dev)
 	return EXIT_SUCCESS;
 }
 
-int device_iqfile_rx(device_t *dev)
+int dev_iqfile_rx(device *dev)
 {
 	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
@@ -58,15 +43,14 @@ int device_iqfile_rx(device_t *dev)
 
 	uint64_t position = 0;
 	uint8_t byte;
-	device_file_t *driver = dev->driver;
 	while (true) {
-		fread(&byte, 1, 1, driver->fp);
-		if (ferror(driver->fp)) {
+		fread(&byte, 1, 1, ((dev_iqfile *) dev->driver)->fp);
+		if (ferror(((dev_iqfile *) dev->driver)->fp)) {
 			return EXIT_FAILURE;
 		}
-		if (feof(driver->fp)) {
-			if (driver->loop) {
-				rewind(driver->fp);
+		if (feof(((dev_iqfile *) dev->driver)->fp)) {
+			if (((dev_iqfile *) dev->driver)->loop) {
+				rewind(((dev_iqfile *) dev->driver)->fp);
 				position = 0;
 			} else {
 				return EXIT_SUCCESS;
@@ -78,13 +62,14 @@ int device_iqfile_rx(device_t *dev)
 	return EXIT_SUCCESS;
 }
 
-int device_iqfile_open(device_t *dev, const char *path, const bool loop)
+int dev_iqfile_open(device *dev, const char *path, const bool loop)
 {
 	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
 	}
+	printf("open: 0x%p\n", dev->driver);
 
-	if (device_iqfile_close(dev)) {
+	if (dev_iqfile_close(dev)) {
 		return EXIT_FAILURE;
 	}
 
@@ -93,30 +78,29 @@ int device_iqfile_open(device_t *dev, const char *path, const bool loop)
 		return EXIT_FAILURE;
 	}
 
-	device_file_t *driver = dev->driver;
-	driver->path = strdup(path);
-	driver->fp = fp;
-	driver->loop = loop;
+	((dev_iqfile *) dev->driver)->path = strdup(path);
+	((dev_iqfile *) dev->driver)->fp = fp;
+	((dev_iqfile *) dev->driver)->loop = loop;
 
 	return EXIT_SUCCESS;
 }
 
-int device_iqfile_close(device_t *dev)
+int dev_iqfile_close(device *dev)
 {
-	if (!dev || !dev->driver || dev->type != IQFILE) {
+	if (!dev || !dev->driver) {
 		return EXIT_FAILURE;
 	}
+	printf("close: 0x%p\n", dev->driver);
 
-	device_file_t *driver = dev->driver;
-	if (driver->path) {
-		free(driver->path);
-		driver->path = NULL;
+	if (((dev_iqfile *) dev->driver)->path) {
+		free(((dev_iqfile *) dev->driver)->path);
+		((dev_iqfile *) dev->driver)->path = NULL;
 	}
-	if (driver->fp) {
-		if (fclose(driver->fp)) {
+	if (((dev_iqfile *) dev->driver)->fp) {
+		if (fclose(((dev_iqfile *) dev->driver)->fp)) {
 			return EXIT_FAILURE;
 		}
-		driver->fp = NULL;
+		((dev_iqfile *) dev->driver)->fp = NULL;
 	}
 
 	return EXIT_SUCCESS;

@@ -9,8 +9,8 @@
 
 #define HACKRF_BUFFER_SIZE (262144 / 2)
 
-int device_hackrf_config(device_t *, const uint64_t, const uint64_t);
-int device_hackrf_xfer(device_t *);
+int dev_hackrf_setup(device *, const uint64_t, const uint64_t);
+int dev_hackrf_xfer(device *);
 
 int rx_callback(hackrf_transfer *);
 int tx_callback(hackrf_transfer *);

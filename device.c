@@ -3,11 +3,19 @@
 #include "device_hackrf.h"
 #include "device_iqfile.h"
 
-device_iface_t devices[] = {
-	{ NULL, NULL },					/* DUMMY */
-	{ device_iqfile_config, device_iqfile_xfer },	/* IQFILE */
-	{ device_hackrf_config, device_hackrf_xfer },	/* HACKRF */
+device_iface devices[] = {
+	{ dev_iqfile_setup, dev_iqfile_xfer, dev_destroy },	/* IQFILE */
+	{ dev_hackrf_setup, dev_hackrf_xfer, dev_destroy },	/* HACKRF */
 };
+
+int dev_destroy(device *dev)
+{
+	free(dev->driver);
+	free(dev->buffer);
+	free(dev);
+
+	return EXIT_SUCCESS;
+}
 
 int printf_iq(uint8_t byte, uint64_t position)
 {

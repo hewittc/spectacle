@@ -4,9 +4,8 @@
 #include "common.h"
 
 typedef enum {
-	DUMMY = 0,
-	IQFILE = 1,
-	HACKRF = 2,
+	IQFILE = 0,
+	HACKRF = 1,
 } device_type;
 
 typedef enum {
@@ -22,25 +21,21 @@ typedef struct {
 	uint64_t freq;		/* Hz */
 	uint64_t rate;		/* Hz */
 	float complex *buffer;
-} device_t;
+} device;
 
 typedef struct {
-	int (*config)(device_t *, const uint64_t, const uint64_t);
-	int (*xfer)(device_t *);
-} device_iface_t;
+	int (*setup)(device *, const uint64_t, const uint64_t);
+	int (*xfer)(device *);
+	int (*destroy)(device *);
+} device_iface;
 
-typedef struct {
-	char *path;
-	FILE *fp;
-	bool loop;
-} device_file_t;
+extern device_iface devices[];
 
-extern device_iface_t devices[];
-
+int dev_destroy(device *dev);
 int printf_iq(uint8_t, uint64_t);
 
-extern int device_iqfile_open(device_t *, const char *, bool);
-extern int device_iqfile_close(device_t *);
+extern int dev_iqfile_open(device *, const char *, bool);
+extern int dev_iqfile_close(device *);
 
 #endif /* DEVICE_H */
 

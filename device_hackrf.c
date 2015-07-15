@@ -13,7 +13,7 @@ float complex *hackrf_buffer = NULL;
 
 volatile uint32_t byte_count = 0;
 
-int device_hackrf_config(device_t *dev, const uint64_t freq, const uint64_t rate)
+int dev_hackrf_setup(device *dev, const uint64_t freq, const uint64_t rate)
 {
 	int result = EXIT_SUCCESS;
 	if (!dev->driver) {
@@ -37,14 +37,14 @@ int device_hackrf_config(device_t *dev, const uint64_t freq, const uint64_t rate
 	return result;
 }
 
-int device_hackrf_xfer(device_t *dev)
+int dev_hackrf_xfer(device *dev)
 {
 	int result;
 
 	if (!dev->driver) {
-		result = device_hackrf_config(dev, HACKRF_DEFAULT_FREQ, HACKRF_DEFAULT_RATE);
+		result = dev_hackrf_setup(dev, HACKRF_DEFAULT_FREQ, HACKRF_DEFAULT_RATE);
 		if (result != HACKRF_SUCCESS) {
-			printf("device_hackrf_config() failed: %s (%d)\n", hackrf_error_name(result), result);
+			printf("dev_hackrf_setup() failed: %s (%d)\n", hackrf_error_name(result), result);
 			return EXIT_FAILURE;
 		}
 	}
