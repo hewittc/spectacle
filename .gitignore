@@ -4,6 +4,7 @@ spectacle
 
 # C extensions
 *.so
+*.o
 
 # Packages
 *.egg
