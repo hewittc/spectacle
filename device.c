@@ -1,33 +1,41 @@
 #include "common.h"
 #include "device.h"
-#include "device_hackrf.h"
 #include "device_iqfile.h"
 
 device_iface devices[] = {
-	{ dev_iqfile_setup, dev_iqfile_xfer, dev_destroy },	/* IQFILE */
-	{ dev_hackrf_setup, dev_hackrf_xfer, dev_destroy },	/* HACKRF */
+	{ dev_iqfile_setup, dev_iqfile_rx, dev_iqfile_tx, dev_iqfile_destroy },	/* IQFILE */
 };
 
-int dev_destroy(device *dev)
+int printf_buffer(int8_t *buffer, size_t size)
 {
-	free(dev->driver);
-	free(dev->buffer);
-	free(dev);
+	for (size_t i = 0; i < size;) {
+		if (!(i % 16)) { 
+			printf("%08"PRIx64": ", i);
+		}
+		printf("%02x", (uint8_t) buffer[i]);
+		if (!(++i % 2)) {
+			printf(" ");
+		}
+		if (!(i % 16) || i == size) {
+			printf("\n");
+		}
+	}
 
 	return EXIT_SUCCESS;
 }
 
-int printf_iq(uint8_t byte, uint64_t position)
+int printf_cbuffer(complex float *buffer, size_t size)
 {
-	if (!(position % 16)) { 
-		printf("%08"PRIx64": ", position);
-	}
-	printf("%02x", byte);
-	if (!(++position % 2)) {
-		printf(" ");
-	}
-	if (!(position % 16)) {
-		printf("\n");
+	for (size_t i = 0; i < size;) {
+		if (!(i % 8)) { 
+			printf("%08"PRIx64": ", i);
+		}
+		printf("%02x%02x", (uint8_t) crealf(buffer[i]), (uint8_t) cimagf(buffer[i]));
+		if (!(++i % 8) || i == size) {
+			printf("\n");
+		} else {
+			printf(" ");
+		}
 	}
 
 	return EXIT_SUCCESS;

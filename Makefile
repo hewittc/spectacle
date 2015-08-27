@@ -1,8 +1,8 @@
 CC     = clang
 CFLAGS = -std=c11 -g
-LIBS   = -lhackrf -lliquid -lm -lpthread
-DEPS   = common.h device.h device_hackrf.h device_iqfile.h fft.h 
-SRC    = device.c device_hackrf.c device_iqfile.c fft.c main.c
+LIBS   = -lliquid -lm -lpthread
+DEPS   = common.h device.h device_iqfile.h fft.h 
+SRC    = device.c device_iqfile.c fft.c main.c
 
 EXE    = spectacle
 OBJDIR = .

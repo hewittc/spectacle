@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 	if (dev) {
 		dev_iface->setup(dev, 92e6, 20e6);
 		dev_iqfile_open(dev, "./pager.iq", false);
-		dev_iface->xfer(dev);
+		dev_iface->rx(dev, 100);
 		dev_iqfile_close(dev);
 		dev_iface->destroy(dev);
 	}
