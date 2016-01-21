@@ -1,4 +1,4 @@
-#!/bin/env python2
+#!/usr/bin/env python2
 # hackrf_transfer -r data/data.fifo -f 434000000 -s 8000000 -l 16 -g 20
 
 import common
@@ -6,33 +6,25 @@ import sys
 import time
 import logging
 import multiprocessing
+
 from fileio import FileIO
+from hackrfio import HackRFIO
 from periodogram import Periodogram
 from multiprocessing import Pipe, Event
-
-targetfreq = 434000000                              # target frequency
-samplerate = 8000000                                # samples per second
-samplesize = 131072                                 # number of samples in buffer
-sampletype = 'int8'                                 # uint8 for hackrf beta
-fftsize    = 4096                                   # number of samples per transform
 
 class Spectacle:
     def __init__(self, path):
         self.path = path
-        self.params = { 
-            'targetfreq': targetfreq,
-            'samplerate': samplerate,
-            'samplesize': samplesize,
-            'sampletype': sampletype,
-            'fftsize'   : fftsize,
-        }
         self.source, self.sink = Pipe()
         self.events = { 'reading': Event() }
 
-        self.reader = FileIO(self.path, self.params, self.source, self.events)
+        if self.path is '':
+            self.reader = HackRFIO(self.source, self.events)
+        else:
+            self.reader = FileIO(self.path, self.source, self.events)
         self.reader.start()
 
-        self.periodogram = Periodogram(self.params, self.sink, self.events)
+        self.periodogram = Periodogram(self.sink, self.events)
         self.periodogram.start()
 
         try:
@@ -48,12 +40,14 @@ def main():
     logger.setLevel(logging.INFO)
 
     path = ''
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in (1, 2):
         print('error: wrong number of arguments.')
-        print('usage: {} <file>'.format(sys.argv[0]))
+        print('usage: {}          (to use hackrf)'.format(sys.argv[0]))
+        print('usage: {} <file>   (to use raw file)'.format(sys.argv[0]))
         sys.exit(1)
     else:
-        path = sys.argv[1]
+        if len(sys.argv) is 2:
+            path = sys.argv[1]
 
     spectacle = Spectacle(path)
 
