@@ -1,3 +1,9 @@
 [submodule "liquid-dsp"]
 	path = liquid-dsp
 	url = https://github.com/jgaeddert/liquid-dsp.git
+[submodule "csdr"]
+	path = csdr
+	url = https://github.com/simonyiszk/csdr.git
+[submodule "kplot"]
+	path = kplot
+	url = https://github.com/kristapsdz/kplot.git
