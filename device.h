@@ -20,12 +20,10 @@ typedef struct {
 	int (*rx)(device *, size_t samples);
 	int (*tx)(device *);
 	int (*destroy)(device *);
+	int (*printf)(device *, size_t);
 } device_iface;
 
 extern device_iface devices[];
-
-int printf_buffer(int8_t *, size_t);
-int printf_cbuffer(complex float *, size_t);
 
 extern int dev_iqfile_open(device *, const char *, bool);
 extern int dev_iqfile_close(device *);

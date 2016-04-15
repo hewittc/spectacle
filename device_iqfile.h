@@ -21,5 +21,7 @@ int dev_iqfile_destroy(device *);
 int dev_iqfile_path(device *, const char *);
 int dev_iqfile_rx(device *, size_t);
 int dev_iqfile_tx(device *);
+int dev_iqfile_printf(device *, size_t);
+int dev_iqfile_cprintf(device *, size_t);
 
 #endif /* DEVICE_IQFILE_H */

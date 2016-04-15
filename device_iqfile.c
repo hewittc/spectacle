@@ -52,8 +52,6 @@ int dev_iqfile_rx(device *dev, size_t samples)
 		dev->buffer[i] = (complex float) buffer[(2 * i)] + buffer[(2 * i) + 1] * I;
 	}
 	
-	printf_cbuffer((complex float *)dev->buffer, samples);
-
 	return EXIT_SUCCESS;
 }
 
@@ -116,6 +114,25 @@ int dev_iqfile_destroy(device *dev)
         free(dev->buffer);
         free(dev->driver);
         free(dev);
+
+        return EXIT_SUCCESS;
+}
+
+int dev_iqfile_printf(device *dev, size_t size)
+{
+	complex float *buffer = dev->buffer;
+
+        for (size_t i = 0, j = 0; i < size;) {
+                if (!(i % 8)) {
+                        printf("%08"PRIx64": ", 16 * j++);
+                }
+                printf("%02x%02x", (uint8_t) crealf(buffer[i]), (uint8_t) cimagf(buffer[i]));
+                if (!(++i % 8) || i == size) {
+                        printf("\n");
+                } else {
+                        printf(" ");
+                }
+        }
 
         return EXIT_SUCCESS;
 }
