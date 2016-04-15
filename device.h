@@ -20,8 +20,9 @@ typedef struct {
 	int (*rx)(device *, size_t samples);
 	int (*tx)(device *);
 	int (*destroy)(device *);
-	int (*printf)(device *, size_t);
 } device_iface;
+
+int printf_cbuffer(complex float *, size_t);
 
 extern device_iface devices[];
 
