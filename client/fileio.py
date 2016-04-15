@@ -3,7 +3,12 @@ import sys
 import bz2
 import gzip
 import time
-import numpy as np
+
+try:
+    import numpy as np
+except ImportError as e:
+    print('error: install numpy')
+    sys.exit(-1)
 
 from multiprocessing import Process, Pipe
 

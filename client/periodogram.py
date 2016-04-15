@@ -1,18 +1,29 @@
 import sys
 import time
 import common
-import gtk
-import gobject
-import numpy as np
+
+try:
+    import gtk
+    import gobject
+except ImportError as e:
+    print('error: install python-gtk and python-gobject')
+    sys.exit(-1)
+
+try:
+    import numpy as np
+    from numpy import random as rand
+
+    from scipy.fftpack import fft, fftfreq, fftshift
+    from scipy import signal as sig
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_gtkagg import FigureCanvasGTKAgg as FigureCanvas
+    from matplotlib.backends.backend_gtkagg import NavigationToolbar2GTKAgg as NavigationToolbar
+    from matplotlib import pyplot, animation
+except ImportError as e:
+    print('error: install numpy')
+    sys.exit(-1)
 
 from multiprocessing import Process, Pipe, Event
-from numpy import random as rand
-from scipy.fftpack import fft, fftfreq, fftshift
-from scipy import signal as sig
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_gtkagg import FigureCanvasGTKAgg as FigureCanvas
-from matplotlib.backends.backend_gtkagg import NavigationToolbar2GTKAgg as NavigationToolbar
-from matplotlib import pyplot, animation
 
 class Periodogram(Process):
     def __init__(self, pipe, events):
