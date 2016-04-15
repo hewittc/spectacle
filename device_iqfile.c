@@ -57,7 +57,7 @@ int dev_iqfile_rx(device *dev, size_t samples)
 
 int dev_iqfile_tx(device *dev)
 {
-	return EXIT_SUCCESS;
+	return EXIT_FAILURE;
 }
 
 int dev_iqfile_open(device *dev, const char *path, const bool loop)
@@ -65,8 +65,9 @@ int dev_iqfile_open(device *dev, const char *path, const bool loop)
 	if (!dev || !dev->driver || dev->type != IQFILE) {
 		return EXIT_FAILURE;
 	}
+#ifdef DEBUG
 	printf("open: 0x%p\n", dev->driver);
-
+#endif
 	dev_iqfile *driver = (dev_iqfile *) dev->driver;
 
 	if (driver->fp) {
@@ -91,8 +92,9 @@ int dev_iqfile_close(device *dev)
 	if (!dev || !dev->driver) {
 		return EXIT_FAILURE;
 	}
+#ifdef DEBUG
 	printf("close: 0x%p\n", dev->driver);
-
+#endif
 	dev_iqfile *driver = (dev_iqfile *) dev->driver;
 
 	if (driver->path) {
