@@ -24,7 +24,7 @@ float window_gaussian(const float);
 float window_welch(const float);
 float window_bartlett(const float);
 
-int apply_window(float complex *, float complex *, unsigned int, fft_window);
+int apply_window(float complex *, float complex *, size_t, fft_window);
 
 #endif /* FFT_H */
 

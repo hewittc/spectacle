@@ -7,7 +7,7 @@ int fft(float complex *in, float complex *out, unsigned int size, int flags)
 	fft_execute(fft_plan);
 	fft_destroy_plan(fft_plan);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 float window_rectangle(const float pos)
@@ -56,7 +56,7 @@ float window_bartlett(const float pos)
 	}
 }
 
-int apply_window(float complex *in, float complex *out, unsigned int size, fft_window window)
+int apply_window(float complex *in, float complex *out, size_t size, fft_window window)
 {
 	float (*window_function)(const float);
 	int i;
@@ -86,9 +86,12 @@ int apply_window(float complex *in, float complex *out, unsigned int size, fft_w
 		break;
 	}
 
-	for (i = 0; i < size; i++) {
-		out[i] = crealf(in[i]) * window_function(crealf(in[i])) + I * cimag(in[i]) * window_function(cimag(in[i]));
+	float pos = -1.0;
+	float inc = 2.0 / size;
+	for (size_t i = 0; i < size; i++) {
+		out[i] = crealf(in[i]) * window_function(pos) + I * cimag(in[i]) * window_function(pos);
+		pos += inc;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
