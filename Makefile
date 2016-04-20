@@ -1,6 +1,6 @@
 CC     = clang
-CFLAGS = -std=c11 -g -DDEBUG
-LIBS   = -lliquid -lm -lpthread
+CFLAGS = -std=c11 -o3 -g -DDEBUG
+LIBS   = -lzmq -lliquid -lm -lpthread
 DEPS   = common.h device.h device_iqfile.h fft.h 
 SRC    = device.c device_iqfile.c fft.c main.c
 

@@ -12,6 +12,7 @@
 #include <complex.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <zmq.h>
 
 #endif /* COMMON_H */
 
