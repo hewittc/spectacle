@@ -8,20 +8,21 @@ static void *rx(void *request)
 	device *dev = calloc(1, sizeof(*dev));
 	if (dev) {
 		dev_iface->setup(dev, 92e6, 20e6);
-		dev_iqfile_open(dev, "./pager.iq2", false);
+		dev_iqfile_open(dev, "./pager.iq", false);
 
 		size_t bins = 512;
-		complex float *out = calloc(bins, sizeof(complex float));
+		complex float *buffer = calloc(bins, sizeof(complex float));
 
 		size_t i = 0;
 		while (1) {
 			dev_iface->rx(dev, bins);
 
-			apply_window(dev->buffer, out, bins, HANN);
-			fft(out, out, bins, 0);
+			memcpy(buffer, dev->buffer, sizeof(complex float) * bins);
+			apply_window(buffer, bins, HANN);
+			fft(buffer, bins, 0);
 
 			for (size_t j = 0; j < bins; j++) {
-				printf("%zu %zu %f\n", i, j, 20.0 * log10f(cabsf(out[j])));
+				printf("%zu %zu %f\n", i, j, 20.0 * log10f(cabsf(buffer[j])));
 			}
 
 			i++;

@@ -1,9 +1,9 @@
 #include "common.h"
 #include "fft.h"
 
-int fft(float complex *in, float complex *out, unsigned int size, int flags)
+int fft(float complex *buffer, unsigned int size, int flags)
 {
-	fftplan fft_plan = fft_create_plan(size, in, out, LIQUID_FFT_FORWARD, flags);
+	fftplan fft_plan = fft_create_plan(size, buffer, buffer, LIQUID_FFT_FORWARD, flags);
 	fft_execute(fft_plan);
 	fft_destroy_plan(fft_plan);
 
@@ -56,7 +56,7 @@ float window_bartlett(const float pos)
 	}
 }
 
-int apply_window(float complex *in, float complex *out, size_t size, fft_window window)
+int apply_window(float complex *buffer, size_t size, fft_window window)
 {
 	float (*window_function)(const float);
 	int i;
@@ -89,7 +89,7 @@ int apply_window(float complex *in, float complex *out, size_t size, fft_window 
 	float pos = -1.0;
 	float inc = 2.0 / size;
 	for (size_t i = 0; i < size; i++) {
-		out[i] = crealf(in[i]) * window_function(pos) + I * cimag(in[i]) * window_function(pos);
+		buffer[i] = crealf(buffer[i]) * window_function(pos) + I * cimag(buffer[i]) * window_function(pos);
 		pos += inc;
 	}
 

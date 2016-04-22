@@ -14,7 +14,7 @@ typedef enum {
 	BARTLETT = 6
 } fft_window;
 
-int fft(float complex *, float complex *, unsigned int, int);
+int fft(float complex *, unsigned int, int);
 
 float window_rectangle(const float);
 float window_hamming(const float);
@@ -24,7 +24,7 @@ float window_gaussian(const float);
 float window_welch(const float);
 float window_bartlett(const float);
 
-int apply_window(float complex *, float complex *, size_t, fft_window);
+int apply_window(float complex *, size_t, fft_window);
 
 #endif /* FFT_H */
 
