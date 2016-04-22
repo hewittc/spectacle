@@ -10,6 +10,8 @@ static void *rx(void *request)
 		dev_iface->setup(dev, 92e6, 20e6);
 		dev_iqfile_open(dev, "./pager.iq", false);
 
+		zmq_msg_t msg;
+
 		size_t bins = 512;
 		complex float *buffer = calloc(bins, sizeof(complex float));
 
@@ -21,12 +23,18 @@ static void *rx(void *request)
 			apply_window(buffer, bins, HANN);
 			fft(buffer, bins, 0);
 
-			for (size_t j = 0; j < bins; j++) {
-				printf("%zu %zu %f\n", i, j, 20.0 * log10f(cabsf(buffer[j])));
-			}
+			//for (size_t j = 0; j < bins; j++) {
+			//	//printf("%zu %zu %f\n", i, j, 20.0 * log10f(cabsf(buffer[j])));
+			//}
 
+			zmq_msg_init_size(&msg, 6);
+			memset(zmq_msg_data (&msg), 'A', 6);
+			zmq_msg_send(&msg, request, 0);
+	
 			i++;
 		}
+
+		free(buffer);
 
 		dev_iqfile_close(dev);
 		dev_iface->destroy(dev);
@@ -39,11 +47,13 @@ int main(int argc, char **argv)
 {
 	void *zmq_ctx = zmq_ctx_new();
 	void *push = zmq_socket(zmq_ctx, ZMQ_PUSH);
-	zmq_bind(push, "inproc://data-rx");
+	zmq_bind(push, "tcp://127.0.0.1:5555");
 
 	pthread_t thread_rx;
-	pthread_create(&thread_rx, NULL, rx, zmq_ctx);
+	pthread_create(&thread_rx, NULL, rx, push);
 	pthread_join(thread_rx, NULL);
+
+	zmq_ctx_destroy(zmq_ctx);
 
 	return EXIT_SUCCESS;
 }
