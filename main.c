@@ -8,7 +8,7 @@ static void *rx(void *request)
 	device *dev = calloc(1, sizeof(*dev));
 	if (dev) {
 		dev_iface->setup(dev, 92e6, 20e6);
-		dev_iqfile_open(dev, "./pager.iq", false);
+		dev_iqfile_open(dev, "./pager.iq", true);
 
 		zmq_msg_t msg;
 
@@ -23,12 +23,8 @@ static void *rx(void *request)
 			apply_window(buffer, bins, HANN);
 			fft(buffer, bins, 0);
 
-			//for (size_t j = 0; j < bins; j++) {
-			//	//printf("%zu %zu %f\n", i, j, 20.0 * log10f(cabsf(buffer[j])));
-			//}
-
-			zmq_msg_init_size(&msg, 6);
-			memset(zmq_msg_data (&msg), 'A', 6);
+			zmq_msg_init_size(&msg, sizeof(complex float) * bins);
+			memcpy(zmq_msg_data (&msg), buffer, sizeof(complex float) * bins);
 			zmq_msg_send(&msg, request, 0);
 	
 			i++;
