@@ -1,12 +1,12 @@
 CC     = clang
-CFLAGS = -std=c11 -o3 -g -DDEBUG
+CFLAGS = -std=c11 -o0 -g -DDEBUG
 LIBS   = -lzmq -lliquid -lm -lpthread
-DEPS   = common.h device.h device_iqfile.h fft.h 
-SRC    = device.c device_iqfile.c fft.c main.c
+SRCS   = device.c device_iqfile.c main.c
+DEPS   = common.h device.h device_iqfile.h 
 
 EXE    = spectacle
 OBJDIR = .
-OBJ    = $(patsubst %,$(OBJDIR)/%,$(SRC:.c=.o))
+OBJ    = $(patsubst %,$(OBJDIR)/%,$(SRCS:.c=.o))
 
 all: $(EXE)
 

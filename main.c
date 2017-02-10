@@ -1,55 +1,56 @@
 #include "common.h"
 #include "device.h"
-#include "fft.h"
 
-static void *rx(void *request)
-{
-	device_iface *dev_iface = &devices[IQFILE];
-	device *dev = calloc(1, sizeof(*dev));
-	if (dev) {
-		dev_iface->setup(dev, 92e6, 20e6);
-		dev_iqfile_open(dev, "./pager.iq", true);
+void *do_fft(void *args) {
+	device *dev = (device *) args;
 
-		zmq_msg_t msg;
+	void *zmq_ctx;
+	zmq_ctx = zmq_ctx_new();
 
-		size_t bins = 512;
-		complex float *buffer = calloc(bins, sizeof(complex float));
-
-		size_t i = 0;
-		while (1) {
-			dev_iface->rx(dev, bins);
-
-			memcpy(buffer, dev->buffer, sizeof(complex float) * bins);
-			apply_window(buffer, bins, HANN);
-			fft(buffer, bins, 0);
-
-			zmq_msg_init_size(&msg, sizeof(complex float) * bins);
-			memcpy(zmq_msg_data (&msg), buffer, sizeof(complex float) * bins);
-			zmq_msg_send(&msg, request, 0);
+	void *socket;
+	socket = zmq_socket(zmq_ctx, ZMQ_SUB);
 	
-			i++;
-		}
+	zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
 
-		free(buffer);
+	while (!dev->buffer_size);
 
-		dev_iqfile_close(dev);
-		dev_iface->destroy(dev);
+	zmq_connect(socket, "tcp://127.0.0.1:5555");
+
+	complex float *buffer;
+	buffer = calloc(dev->buffer_size, sizeof(complex float));
+
+	while (1) {
+		zmq_recv(socket, buffer, dev->buffer_size, 0);
+		printf_cbuffer(buffer, dev->buffer_size);
 	}
-
-	return NULL;
 }
 
 int main(int argc, char **argv)
 {
-	void *zmq_ctx = zmq_ctx_new();
-	void *push = zmq_socket(zmq_ctx, ZMQ_PUSH);
-	zmq_bind(push, "tcp://127.0.0.1:5555");
+	device *dev; 
+	dev = calloc(1, sizeof(device));
 
-	pthread_t thread_rx;
-	pthread_create(&thread_rx, NULL, rx, push);
-	pthread_join(thread_rx, NULL);
+	if (!dev) {
+		printf("error: failed to allocate device memory\n");
+		exit(EXIT_FAILURE);
+	}
 
-	zmq_ctx_destroy(zmq_ctx);
+	dev->type = IQFILE;
+
+	device_iface *dev_iface = &devices[dev->type];
+
+	dev_iface->setup(dev, 92e6, 20e6);
+
+	pthread_t rx;
+	pthread_t fft;
+
+	pthread_create(&rx, NULL, device_rx, dev);
+	pthread_create(&fft, NULL, do_fft, dev);
+
+	pthread_join(fft, NULL);
+	pthread_join(rx, NULL);
+
+	dev_iface->destroy(dev);
 
 	return EXIT_SUCCESS;
 }

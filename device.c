@@ -3,16 +3,24 @@
 #include "device_iqfile.h"
 
 device_iface devices[] = {
-	{ dev_iqfile_setup, dev_iqfile_rx, dev_iqfile_tx, dev_iqfile_destroy },	/* IQFILE */
+	{ dev_iqfile_setup, dev_iqfile_rx, dev_iqfile_destroy },	/* IQFILE */
 };
 
 int printf_cbuffer(complex float *buffer, size_t size)
 {
+	uint8_t real;
+	uint8_t imag;
+
         for (size_t i = 0, j = 0; i < size;) {
                 if (!(i % 8)) {
                         printf("%08"PRIx64": ", 16 * j++);
                 }
-                printf("%02x%02x", (uint8_t) crealf(buffer[i]), (uint8_t) cimagf(buffer[i]));
+
+		real = (uint8_t) crealf(buffer[i]);
+		imag = (uint8_t) cimagf(buffer[i]);
+
+                printf("%02x%02x", real, imag);
+
                 if (!(++i % 8) || i == size) {
                         printf("\n");
                 } else {
@@ -21,5 +29,49 @@ int printf_cbuffer(complex float *buffer, size_t size)
         }
 
         return EXIT_SUCCESS;
+}
+
+void *device_rx(void *args)
+{
+	device *dev = (device *) args;
+	device_iface *dev_iface = &devices[dev->type];
+
+	if (!dev->context) {
+		printf("error: missing device context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	void *zmq_ctx;
+	zmq_ctx = zmq_ctx_new();
+
+	void *socket; 
+	socket = zmq_socket(zmq_ctx, ZMQ_PUB);
+
+	zmq_bind(socket, "tcp://127.0.0.1:5555");
+
+	if (dev->type == IQFILE) {
+		dev_iqfile_open(dev, "pager.iq", true);
+	}
+
+	dev->buffer_size = 65536;
+	dev->buffer = calloc(dev->buffer_size, sizeof(complex float));
+
+	if (!dev->buffer) {
+		printf("error: unable to allocate read buffer\n");
+		exit(EXIT_FAILURE);
+	}
+
+	while (1) {
+		dev_iface->rx(dev, dev->buffer_size);
+		zmq_send(socket, dev->buffer, dev->buffer_size, 0);
+	}
+
+	if (dev->type == IQFILE) {
+		dev_iqfile_close(dev);
+	}
+
+	zmq_ctx_destroy(zmq_ctx);
+
+        return NULL;
 }
 
