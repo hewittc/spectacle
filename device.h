@@ -12,13 +12,12 @@ typedef struct {
 	device_type type;
 	uint64_t freq;
 	uint64_t rate;
-	complex float *buffer;
 	size_t buffer_size;
 } device;
 
 typedef struct {
 	int (*setup)(device *, const uint64_t, const uint64_t);
-	int (*rx)(device *, size_t samples);
+	int (*rx)(device *, complex float *, size_t);
 	int (*destroy)(device *);
 } device_iface;
 

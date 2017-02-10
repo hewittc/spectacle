@@ -20,7 +20,7 @@ void *do_fft(void *args) {
 	buffer = calloc(dev->buffer_size, sizeof(complex float));
 
 	while (1) {
-		zmq_recv(socket, buffer, dev->buffer_size, 0);
+		zmq_recv(socket, buffer, dev->buffer_size * sizeof(complex float), 0);
 		printf_cbuffer(buffer, dev->buffer_size);
 	}
 }

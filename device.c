@@ -53,25 +53,21 @@ void *device_rx(void *args)
 		dev_iqfile_open(dev, "pager.iq", true);
 	}
 
-	dev->buffer_size = 65536;
-	dev->buffer = calloc(dev->buffer_size, sizeof(complex float));
-
-	if (!dev->buffer) {
-		printf("error: unable to allocate read buffer\n");
-		exit(EXIT_FAILURE);
-	}
+	complex float *buffer;
+	buffer = calloc(dev->buffer_size, sizeof(complex float));
 
 	while (1) {
-		dev_iface->rx(dev, dev->buffer_size);
-		zmq_send(socket, dev->buffer, dev->buffer_size, 0);
+		dev_iface->rx(dev, buffer, dev->buffer_size);
+		printf_cbuffer(buffer, dev->buffer_size);
+		zmq_send(socket, buffer, dev->buffer_size, 0);
 	}
 
 	if (dev->type == IQFILE) {
 		dev_iqfile_close(dev);
 	}
 
-	zmq_ctx_destroy(zmq_ctx);
+	free(buffer);
 
-        return NULL;
+	zmq_ctx_destroy(zmq_ctx);
 }
 

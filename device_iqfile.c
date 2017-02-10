@@ -8,16 +8,15 @@ int dev_iqfile_setup(device *dev, const uint64_t freq, const uint64_t rate)
 	}
 
 	dev->context = calloc(1, sizeof(dev_iqfile));
-	dev->buffer = calloc(IQFILE_BUFFER_SIZE, sizeof(float complex));
-
 	dev->type = IQFILE;
 	dev->freq = freq;
 	dev->rate = rate;
+	dev->buffer_size = IQFILE_BUFFER_SIZE;
 
 	return EXIT_SUCCESS;
 }
 
-int dev_iqfile_rx(device *dev, size_t samples)
+int dev_iqfile_rx(device *dev, complex float *buffer, const size_t samples)
 {
 	if (!dev || !dev->context || dev->type != IQFILE) {
 		return EXIT_FAILURE;
@@ -27,12 +26,13 @@ int dev_iqfile_rx(device *dev, size_t samples)
 
 	size_t bytes_read = 0;
 	size_t bytes_need = samples * 2;
-	int8_t buffer[bytes_need];
+
+	int8_t data[bytes_need];
 
 	while (bytes_read < bytes_need) {
-		size_t bytes = fread(&buffer + bytes_read, sizeof(int8_t), bytes_need, context->fp);
+		size_t bytes = fread(data + bytes_read, sizeof(int8_t), bytes_need, context->fp);
 		context->pos += bytes;
-
+		
 		if (ferror(context->fp)) {
 			return EXIT_FAILURE;
 		}
@@ -48,8 +48,10 @@ int dev_iqfile_rx(device *dev, size_t samples)
 		bytes_read += bytes;
 	}
 
+	int j;
 	for (size_t i = 0; i < samples; i++) {
-		dev->buffer[i] = (complex float) buffer[(2 * i)] + buffer[(2 * i) + 1] * I;
+		j = (2 * i);
+		buffer[i] = data[j] + I * data[j + 1];
 	}
 	
 	return EXIT_SUCCESS;
@@ -108,7 +110,6 @@ int dev_iqfile_close(device *dev)
 
 int dev_iqfile_destroy(device *dev)
 {
-        free(dev->buffer);
         free(dev->context);
         free(dev);
 
