@@ -86,7 +86,6 @@ int dev_iqfile_open(device *dev, const char *path, const bool loop)
 
 int dev_iqfile_close(device *dev)
 {
-	printf("????\n");
 	if (!dev || !dev->context) {
 		return EXIT_FAILURE;
 	}
