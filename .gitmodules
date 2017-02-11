@@ -1,9 +1,12 @@
-[submodule "liquid-dsp"]
-	path = liquid-dsp
-	url = https://github.com/jgaeddert/liquid-dsp.git
 [submodule "csdr"]
 	path = csdr
 	url = https://github.com/simonyiszk/csdr.git
 [submodule "kore"]
 	path = kore
 	url = https://github.com/jorisvink/kore.git
+[submodule "liquid-dsp"]
+	path = liquid-dsp
+	url = https://github.com/jgaeddert/liquid-dsp.git
+[submodule "zmq"]
+	path = zmq
+	url = https://github.com/zeromq/libzmq.git
