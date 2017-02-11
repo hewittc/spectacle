@@ -1,5 +1,5 @@
 #include "common.h"
-#include "device_iqfile.h"
+#include "device.h"
 
 int dev_iqfile_setup(device *dev, const uint64_t freq, const uint64_t rate)
 {

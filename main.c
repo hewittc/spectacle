@@ -1,8 +1,6 @@
 #include "common.h"
 #include "device.h"
 
-float complex clog10f(float complex z);
-
 void *do_fft(void *args) {
 	device *dev = (device *) args;
 

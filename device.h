@@ -21,14 +21,13 @@ typedef struct {
 	int (*destroy)(device *);
 } device_iface;
 
-int printf_cbuffer(complex float *, size_t);
-
-extern int dev_iqfile_open(device *, const char *, bool);
-extern int dev_iqfile_close(device *);
-
 extern device_iface devices[];
 
+int printf_cbuffer(complex float *, size_t);
+
 void *device_rx(void *);
+
+#include "device_iqfile.h"
 
 #endif /* DEVICE_H */
 

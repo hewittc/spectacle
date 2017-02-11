@@ -17,5 +17,7 @@
 #include <zmq.h>
 #include <liquid/liquid.h>
 
+float complex clog10f(float complex z);
+
 #endif /* COMMON_H */
 
