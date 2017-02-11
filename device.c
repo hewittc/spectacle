@@ -58,7 +58,7 @@ void *device_rx(void *args)
 
 	while (1) {
 		dev_iface->rx(dev, buffer, dev->buffer_size);
-		printf_cbuffer(buffer, dev->buffer_size);
+		//printf_cbuffer(buffer, dev->buffer_size);
 		zmq_send(socket, buffer, dev->buffer_size, 0);
 	}
 

@@ -1,6 +1,8 @@
 #include "common.h"
 #include "device.h"
 
+float complex clog10f(float complex z);
+
 void *do_fft(void *args) {
 	device *dev = (device *) args;
 
@@ -16,13 +18,46 @@ void *do_fft(void *args) {
 
 	zmq_connect(socket, "tcp://127.0.0.1:5555");
 
+	int bins = 1024;
+	int flags = 0;
+
 	complex float *buffer;
-	buffer = calloc(dev->buffer_size, sizeof(complex float));
+	buffer = calloc(bins, sizeof(complex float));
+
+	complex float *transform;
+	transform = calloc(bins, sizeof(complex float));
+
+	float window[bins];
+	for (int i = 0; i < bins; i++) {
+		window[i] = hann(i, bins);
+	}
 
 	while (1) {
-		zmq_recv(socket, buffer, dev->buffer_size * sizeof(complex float), 0);
-		printf_cbuffer(buffer, dev->buffer_size);
+		zmq_recv(socket, buffer, bins * sizeof(complex float), 0);
+
+		for (int i = 0; i < bins; i++) {
+			buffer[i] = crealf(buffer[i]) * window[i] + I * cimagf(buffer[i]) * window[i];
+		}
+
+		fftplan q = fft_create_plan(bins, buffer, transform, LIQUID_FFT_FORWARD, flags);
+		fft_execute(q);
+		fft_destroy_plan(q);
+
+		//printf_cbuffer(transform, bins);
+
+		float mag;
+		for (int i = bins / 2; i < bins; i++) {
+			mag = 20.0 * clog10f(cabsf(transform[i]));
+			printf("%f\n", mag);
+		}
+		for (int i = 0; i < bins / 2; i++) {
+			mag = 20.0 * clog10f(cabsf(transform[i]));
+			printf("%f\n", mag);
+		}
 	}
+
+	free(transform);
+	free(buffer);
 }
 
 int main(int argc, char **argv)
