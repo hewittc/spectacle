@@ -1,0 +1,41 @@
+pkgname=liquid-dsp-git
+pkgver=v1.3.0.r18.g7c53e131
+pkgrel=1
+pkgdesc="Digital signal processing library for software-defined radios"
+arch=('i686' 'x86_64' 'armv7h' 'aarch64')
+url="http://liquidsdr.org"
+license=('MIT')
+groups=()
+depends=()
+optdepends=('fftw')
+makedepends=('git')
+provides=("${pkgname%}")
+conflicts=("${pkgname%}")
+replaces=()
+backup=()
+options=()
+install=
+source=('config.guess' "${pkgname%-git}::git+https://github.com/jgaeddert/liquid-dsp")
+noextract=()
+md5sums=('e6658e52c79b2c368296c883d90979b9' 'SKIP')
+
+pkgver() {
+	cd "$srcdir/${pkgname%-git}"
+	git describe --long | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+        cp config.guess "$srcdir/${pkgname%-git}/scripts"
+}
+
+build() {
+	cd "$srcdir/${pkgname%-git}"
+	./bootstrap.sh
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$srcdir/${pkgname%-git}"
+	make DESTDIR="$pkgdir/" install
+}
