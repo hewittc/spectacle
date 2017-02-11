@@ -4,6 +4,6 @@
 [submodule "csdr"]
 	path = csdr
 	url = https://github.com/simonyiszk/csdr.git
-[submodule "kplot"]
-	path = kplot
-	url = https://github.com/kristapsdz/kplot.git
+[submodule "kore"]
+	path = kore
+	url = https://github.com/jorisvink/kore.git
