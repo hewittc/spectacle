@@ -59,6 +59,7 @@ void *device_rx(void *args)
 		dev_iface->rx(dev, buffer, dev->buffer_size);
 		//printf_cbuffer(buffer, dev->buffer_size);
 		zmq_send(socket, buffer, dev->buffer_size, 0);
+		usleep(100000);
 	}
 
 	if (dev->type == IQFILE) {

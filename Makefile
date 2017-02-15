@@ -1,7 +1,7 @@
 CC     = clang
 CFLAGS = -std=c11 -o0 -g -DDEBUG
-LIBS   = -lzmq -lliquid -lm -lpthread
-SRCS   = device.c device_iqfile.c main.c
+LIBS   = -lm -lpthread -levent -lzmq -lliquid 
+SRCS   = device.c device_iqfile.c http.c main.c
 DEPS   = common.h device.h device_iqfile.h 
 
 EXE    = spectacle
