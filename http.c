@@ -7,22 +7,7 @@
 
 static void periodogram_request_cb(struct evhttp_request *req, void *args)
 {
-	struct evbuffer *evb;
-	evb = evbuffer_new();
-
         device *dev = (device *) args;
-
-        void *zmq_ctx;
-        zmq_ctx = zmq_ctx_new();
-
-        void *socket;
-        socket = zmq_socket(zmq_ctx, ZMQ_SUB);
-        
-        zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
-
-        while (!dev->buffer_size);
-
-        zmq_connect(socket, "tcp://127.0.0.1:5555");
 
         int bins = 1024;
         int flags = 0;
@@ -38,7 +23,20 @@ static void periodogram_request_cb(struct evhttp_request *req, void *args)
                 window[i] = hann(i, bins);
         }
 
+        void *zmq_ctx;
+        zmq_ctx = zmq_ctx_new();
+
+        void *socket;
+        socket = zmq_socket(zmq_ctx, ZMQ_SUB);
+        
+        zmq_setsockopt(socket, ZMQ_SUBSCRIBE, "", 0);
+
+        while (!dev->buffer_size);
+
+        zmq_connect(socket, "tcp://127.0.0.1:5555");
 	zmq_recv(socket, buffer, bins * sizeof(complex float), 0);
+	zmq_close(socket);
+	zmq_ctx_destroy(zmq_ctx);
 
 	for (int i = 0; i < bins; i++) {
 		buffer[i] = crealf(buffer[i]) * window[i] + I * cimagf(buffer[i]) * window[i];
@@ -48,7 +46,8 @@ static void periodogram_request_cb(struct evhttp_request *req, void *args)
 	fft_execute(q);
 	fft_destroy_plan(q);
 
-	//printf_cbuffer(transform, bins);
+	struct evbuffer *evb;
+	evb = evbuffer_new();
 
 	float mag;
 	for (int i = bins / 2; i < bins; i++) {
@@ -61,6 +60,8 @@ static void periodogram_request_cb(struct evhttp_request *req, void *args)
 	}
 
 	evhttp_send_reply(req, 200, "OK", evb);
+
+	evbuffer_free(evb);
 
         free(transform);
         free(buffer);
