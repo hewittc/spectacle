@@ -52,11 +52,11 @@ static void periodogram_request_cb(struct evhttp_request *req, void *args)
 	float mag;
 	for (int i = bins / 2; i < bins; i++) {
 		mag = 20.0 * clog10f(cabsf(transform[i]));
-		evbuffer_add_printf(evb, "%f\n", mag);
+		evbuffer_add(evb, &mag, sizeof(float));
 	}
 	for (int i = 0; i < bins / 2; i++) {
 		mag = 20.0 * clog10f(cabsf(transform[i]));
-		evbuffer_add_printf(evb, "%f\n", mag);
+		evbuffer_add(evb, &mag, sizeof(float));
 	}
 
 	evhttp_send_reply(req, 200, "OK", evb);
